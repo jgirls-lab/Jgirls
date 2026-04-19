@@ -1,24 +1,36 @@
 export async function onRequest(context) {
-  const requestUrl = new URL(context.request.url);
-  const code = requestUrl.searchParams.get("code");
+  const { searchParams } = new URL(context.request.url);
+  const code = searchParams.get("code");
 
-  // GitHub に送るパラメータ
-  const params = new URLSearchParams();
-  params.append("client_id", context.env.GITHUB_CLIENT_ID);
-  params.append("client_secret", context.env.GITHUB_CLIENT_SECRET);
-  params.append("code", code);
-
-  // GitHub OAuth token エンドポイントへ POST
   const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
-    headers: { "Accept": "application/json" },
-    body: params
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify({
+      client_id: context.env.GITHUB_CLIENT_ID,
+      client_secret: context.env.GITHUB_CLIENT_SECRET,
+      code
+    })
   });
 
-  // GitHub が返してきた JSON をそのまま返す
-  const tokenJson = await tokenRes.json();
+  const data = await tokenRes.json();
 
-  return new Response(JSON.stringify(tokenJson), {
-    headers: { "Content-Type": "application/json" }
+  // ★ Decap CMS に token を返すための postMessage HTML ★
+  return new Response(`
+    <html>
+      <body>
+        <script>
+          (function() {
+            const token = ${JSON.stringify(data)};
+            window.opener.postMessage(token, "*");
+            window.close();
+          })();
+        </script>
+      </body>
+    </html>
+  `, {
+    headers: { "Content-Type": "text/html" }
   });
 }
