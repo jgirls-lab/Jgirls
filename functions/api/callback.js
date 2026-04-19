@@ -15,7 +15,10 @@ export async function onRequest(context) {
   const tokenJson = await tokenRes.json();
   const token = tokenJson.access_token;
 
-  return new Response(JSON.stringify({ token }), {
+  return new Response(JSON.stringify({
+    token: token,
+    provider: "github"
+  }), {
     headers: { "Content-Type": "application/json" }
   });
 }
