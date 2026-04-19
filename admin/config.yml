@@ -2,9 +2,8 @@ backend:
   name: github
   repo: jgirls-lab/Jgirls
   branch: main
-  base_url: https://jgirls.gravure.workers.dev/
+  base_url: https://jojirls.pages.dev
   auth_endpoint: /api/auth
-
 
 media_folder: images
 public_folder: /images
