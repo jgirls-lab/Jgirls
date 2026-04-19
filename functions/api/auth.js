@@ -1,11 +1,21 @@
-export async function onRequest(context) {
-  const clientId = context.env.GITHUB_CLIENT_ID;
-  const redirectUri = `${context.request.url.replace('/api/auth', '/api/callback')}`;
+backend:
+  name: github
+  repo: jgirls-lab/Jgirls
+  branch: main
+  base_url: https://jgirls.pages.dev
+  auth_endpoint: /api/auth
+  callback_endpoint: /api/callback
 
-  const url = new URL("https://github.com/login/oauth/authorize");
-  url.searchParams.set("client_id", clientId);
-  url.searchParams.set("redirect_uri", redirectUri);
-  url.searchParams.set("scope", "repo,user");
+media_folder: images
+public_folder: /images
 
-  return Response.redirect(url.toString(), 302);
-}
+collections:
+  - name: gallery
+    label: Gallery
+    folder: content
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { name: title, label: Title }
+      - { name: image, label: Image, widget: image }
+      - { name: tags, label: Tags, widget: list }
