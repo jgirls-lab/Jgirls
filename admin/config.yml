@@ -2,9 +2,6 @@ backend:
   name: github
   repo: jgirls-lab/Jgirls
   branch: main
-  base_url: https://jgirls.pages.dev
-  auth_endpoint: /api/auth
-  callback_endpoint: /api/callback
 
 media_folder: images
 public_folder: /images
