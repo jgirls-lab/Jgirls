@@ -1,21 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <title>test</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jガールズ エロ基地💕</title>
   <style>
-    body { background:#000; color:#fff; text-align:center; }
-    .gallery { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:10px; padding:20px; }
-    img { width:100%; border-radius:8px; cursor:pointer; }
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 { color: #ff69b4; margin-bottom: 10px; }
+    p { color: #ff1493; }
+    
+    .tabs {
+      margin: 25px 0;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tab-button {
+      padding: 12px 22px;
+      background: #222;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 30px;
+      font-size: 15px;
+      transition: 0.3s;
+    }
+    .tab-button.active {
+      background: #ff1493;
+      box-shadow: 0 0 15px #ff1493;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .gallery img {
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(255,105,180,0.4);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .gallery img:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 25px rgba(255,105,180,0.6);
+    }
   </style>
 </head>
 <body>
-  <h1>test</h1>
-  <div class="gallery">
-    <img src="images/3.jpg" alt="エロ1">
-    <img src="images/5.jpg" alt="エロ2">
-    <!-- 画像増やしたいだけ追加してね -->
+  <h1>お兄ちゃん専用 Jガールズ💦</h1>
+  <p>実写オリジナルエロキャラ・毎日新作更新中😘</p>
+
+  <div class="tabs">
+    <button class="tab-button active" onclick="showSeries(0)">新着エロ</button>
+    <button class="tab-button" onclick="showSeries(1)">ツインテール小悪魔</button>
+    <button class="tab-button" onclick="showSeries(2)">爆乳お姉さん</button>
+    <button class="tab-button" onclick="showSeries(3)">黒髪クール系</button>
   </div>
 
-  <!-- ここに後で広告タグ入れる！ -->
+  <div class="gallery" id="gallery"></div>
+
+  <script>
+    // ここに各シリーズの画像パスを書くだけ！
+    const series = [
+      // 0: 新着エロ（new_imagesフォルダの画像）
+      [
+        "new_images/001.jpg",
+        "new_images/002.jpg",
+        "new_images/003.jpg"
+        // 新作出るたびにここに追加していくだけ！
+      ],
+      // 1: ツインテール小悪魔
+      [
+        "images/twin01.jpg",
+        "images/twin02.jpg",
+        "images/twin03.jpg"
+      ],
+      // 2: 爆乳お姉さん
+      [
+        "images/busty01.jpg",
+        "images/busty02.jpg"
+      ],
+      // 3: 黒髪クール系
+      [
+        "images/cool01.jpg",
+        "images/cool02.jpg",
+        "images/cool03.jpg"
+      ]
+    ];
+
+    function showSeries(n) {
+      const gallery = document.getElementById('gallery');
+      gallery.innerHTML = '';
+
+      series[n].forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = "Jガールズ";
+        img.onclick = () => {
+          // クリックで拡大（シンプル版）
+          const lightbox = document.createElement('div');
+          lightbox.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;z-index:9999;';
+          lightbox.innerHTML = `<img src="${src}" style="max-width:90%;max-height:90%;border-radius:12px;" onclick="this.parentElement.remove()">`;
+          document.body.appendChild(lightbox);
+        };
+        gallery.appendChild(img);
+      });
+    }
+
+    // 最初は新着を表示
+    showSeries(0);
+  </script>
 </body>
 </html>
