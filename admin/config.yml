@@ -4,8 +4,7 @@ backend:
   branch: main
   base_url: https://jgirls.pages.dev
   auth_endpoint: /api/auth
-  site_domain: jgirls.pages.dev
-
+  callback_endpoint: /api/callback
 
 media_folder: images
 public_folder: /images
