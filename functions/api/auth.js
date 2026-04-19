@@ -1,21 +1,13 @@
-backend:
-  name: github
-  repo: jgirls-lab/Jgirls
-  branch: main
-  base_url: https://jgirls.pages.dev
-  auth_endpoint: /api/auth
-  callback_endpoint: /api/callback
+export async function onRequest(context) {
+  const clientId = context.env.GITHUB_CLIENT_ID;
 
-media_folder: images
-public_folder: /images
+  // GitHub に返ってくる URL を自動で /api/callback に変換
+  const redirectUri = `${context.request.url.replace('/api/auth', '/api/callback')}`;
 
-collections:
-  - name: gallery
-    label: Gallery
-    folder: content
-    create: true
-    slug: "{{slug}}"
-    fields:
-      - { name: title, label: Title }
-      - { name: image, label: Image, widget: image }
-      - { name: tags, label: Tags, widget: list }
+  const url = new URL("https://github.com/login/oauth/authorize");
+  url.searchParams.set("client_id", clientId);
+  url.searchParams.set("redirect_uri", redirectUri);
+  url.searchParams.set("scope", "repo,user");
+
+  return Response.redirect(url.toString(), 302);
+}
