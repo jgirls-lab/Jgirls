@@ -78,7 +78,7 @@ body {
   position: relative;
 }
 
-/* 🎬 【大改造】演出レイヤーA：スクショを完全再現したシースルータグ画面 */
+/* 🎬 演出レイヤーA：【濃いめカスタム】黒フェードをガッツリ深くしたタグ画面 */
 .welcome-tag-layer {
   width: 100%;
   height: 100%;
@@ -89,10 +89,16 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  /* ★黒ベースだけど、下半分に向けてじわ〜っと完全に透明（rgba）になるグラデーション！ */
-  background: linear-gradient(to bottom, #0a0a0a 0%, #0a0a0a 40%, rgba(10,10,10,0.8) 60%, rgba(10,10,10,0) 100%);
-  z-index: 30; /* ギャラリー（z-index:20）の上に重ねる */
-  pointer-events: auto; /* 最初はクリックできるようにする */
+  /* ★黒（#0a0a0a）の領域を75%までガッツリ広げて、フェードの不透明度もガツンと濃くしたよぅ！！！ */
+  background: linear-gradient(to bottom, 
+    #0a0a0a 0%, 
+    #0a0a0a 65%, 
+    rgba(10, 10, 10, 0.95) 80%, 
+    rgba(10, 10, 10, 0.6) 90%, 
+    rgba(10, 10, 10, 0) 100%
+  );
+  z-index: 30;
+  pointer-events: auto;
   transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.6s ease;
   will-change: transform, opacity;
 }
@@ -101,7 +107,7 @@ body {
 .welcome-tag-layer.scrolled-up {
   transform: translateY(-100%);
   opacity: 0;
-  pointer-events: none; /* 消えたら下のギャラリーを邪魔しない */
+  pointer-events: none;
 }
 
 .welcome-title {
@@ -134,7 +140,7 @@ body {
   50% { transform: translateY(10px); color: #ff2a6d; }
 }
 
-/* 🎬 【大改造】演出レイヤーB：最初から「下半分に待機して透けてる」ギャラリー */
+/* 🎬 演出レイヤーB：【チラ見えカスタム】最初の下がってくる位置をさらに下げて調整したギャラリー */
 .dynamic-gallery-layer {
   width: 100%;
   height: 100%;
@@ -142,16 +148,16 @@ body {
   top: 0;
   left: 0;
   background: #0a0a0a;
-  z-index: 20; /* タグレイヤーのすぐ下に配置して透けさせる！ */
-  /* ★最初は画面の「中段（Y軸55%くらい）」に少し下げて待機させ、上半分をタグエリアにする！ */
-  transform: translateY(55%); 
+  z-index: 20;
+  /* ★前は55%だったのを「68%」までグッと下げたよぅ！これで画像の露出が減って上品にチラ見えするのッ！ */
+  transform: translateY(68%); 
   transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform;
   display: flex;
   flex-direction: column;
 }
 
-/* 3スクロール完了時に、画面の一番上（Y軸0）までスッと満ち上がる！ */
+/* 3スクロール完了時に、画面の一番上（Y軸0）まで満ち上がる！ */
 .dynamic-gallery-layer.pushed-up {
   transform: translateY(0);
 }
@@ -186,7 +192,7 @@ body {
   padding: 15px;
 }
 
-/* Masonryグリッド（列数固定で爆速！） */
+/* Masonryグリッド */
 .grid {
   column-count: 5;
   column-gap: 12px;
@@ -321,7 +327,7 @@ body {
   width: calc(100% - 380px);
   height: calc(100% - 60px);
   background: rgba(5, 5, 5, 0.96);
-  z-index: 40; /* 完全に一番上に重ねる */
+  z-index: 40;
   display: flex;
   justify-content: center;
   align-items: center;
