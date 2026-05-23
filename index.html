@@ -187,7 +187,7 @@ body {
 .gallery-scroll-wrap {
   flex: 1;
   overflow-y: auto;
-  padding: 15px 15px 5px 15px; /* 下部余白調整 */
+  padding: 15px 15px 5px 15px;
 }
 
 /* Masonryグリッド */
@@ -219,7 +219,7 @@ body {
 }
 
 /* ==========================================
-   📟 【新機能】超軽量スタイリッシュ・ページネーションバー
+   📟 超軽量ページネーションバー
    ========================================== */
 .pagination-container {
   width: 100%;
@@ -446,10 +446,57 @@ body {
 }
 
 .detail-content { flex: 1; overflow-y: auto; padding: 25px; box-sizing: border-box; }
-.close-btn { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 18px; z-index: 2100; display: flex; align-items: center; justify-content: center; }
+
+/* ❌ 閉じるボタンの配置調整 */
+.close-btn { 
+  position: absolute; 
+  top: 15px; 
+  left: 15px; 
+  background: rgba(0,0,0,0.7); 
+  color: white; 
+  border: none; 
+  width: 35px; 
+  height: 35px; 
+  border-radius: 50%; 
+  cursor: pointer; 
+  font-size: 18px; 
+  z-index: 2100; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
 .close-btn:hover { background: #ff2a6d; }
 
-.detail-section-title { font-size: 12px; font-weight: bold; color: #ff2a6d; margin-bottom: 12px; letter-spacing: 1px; margin-top: 35px; }
+/* 🏷️ 【新設】詳細画面の右上タグコンテナ用スタイル！ */
+.detail-tag-header-area {
+  margin-top: 35px;
+  margin-bottom: 5px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end; /* 右上にキレイに寄せるよぅ！ */
+  padding-left: 45px; /* 閉じるボタンとかぶらないようにガード！ */
+}
+.detail-active-tag {
+  font-size: 11px;
+  background: #202020;
+  color: #ff2a6d;
+  border: 1px solid rgba(255, 42, 109, 0.3);
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+.detail-active-tag:hover {
+  background: #ff2a6d;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(255, 42, 109, 0.5);
+}
+
+.detail-section-title { font-size: 12px; font-weight: bold; color: #ff2a6d; margin-bottom: 12px; letter-spacing: 1px; margin-top: 25px; }
+
+/* 🎴 関連画像グリッド（3列表示） */
 .similar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .similar-item { aspect-ratio: 3 / 4; border-radius: 6px; overflow: hidden; cursor: pointer; background: #000; }
 .similar-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.2s; }
@@ -516,6 +563,8 @@ body {
 <div id="detail-sidebar" class="detail-sidebar">
   <button class="close-btn" onclick="closeDetail()">×</button>
   <div class="detail-content">
+    <div class="detail-tag-header-area" id="detail-img-tags-container"></div>
+
     <div class="detail-section-title">🔥 RELATED ASSETS</div>
     <div id="similar-grid" class="similar-grid"></div>
   </div>
@@ -533,9 +582,8 @@ let wheelCount = 0;
 let isPushedUp = false; 
 let currentActiveTag = null;
 
-// ★ページネーションの設定！
 let currentPage = 1;
-const itemsPerPage = 30; // ★1ページあたりの上限枚数だよぅおにーちゃん！
+const itemsPerPage = 30; 
 
 window.addEventListener('DOMContentLoaded', () => {
   fetch('data.json')
@@ -547,8 +595,8 @@ window.addEventListener('DOMContentLoaded', () => {
       jsonData = data; 
       filteredData = [...data]; 
       
-      currentPage = 1; // 初期化
-      renderGallery(); // 描写処理を統合！
+      currentPage = 1; 
+      renderGallery(); 
       initDynamicTags();
       setupScrollAnimation();
     })
@@ -557,16 +605,13 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// ★現在のページデータだけを切り出してグリッドとページバーを同時に描写する神関数！
 function renderGallery() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  
-  // 今のページに表示する画像だけをスライス！
   const pageItems = filteredData.slice(startIndex, endIndex);
   
-  renderMasonry(pageItems, startIndex); // グリッド描写（全体の連番を維持するためにstartIndexを渡すよぅ！）
-  renderPaginationBar(); // ページネーションバー描写
+  renderMasonry(pageItems, startIndex); 
+  renderPaginationBar(); 
 }
 
 function renderMasonry(pageItems, globalStartIndex) {
@@ -579,7 +624,7 @@ function renderMasonry(pageItems, globalStartIndex) {
   }
   
   pageItems.forEach((item, index) => {
-    const globalIndex = globalStartIndex + index; // 左右めくりのための全体通し番号！
+    const globalIndex = globalStartIndex + index; 
     const div = document.createElement('div');
     div.className = 'item';
     div.addEventListener('click', () => openDetail(item, globalIndex)); 
@@ -588,19 +633,17 @@ function renderMasonry(pageItems, globalStartIndex) {
   });
 }
 
-// ★動的ページネーションボタン生成システム！
 function renderPaginationBar() {
   const bar = document.getElementById('pagination-bar');
   bar.innerHTML = '';
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   if (totalPages <= 1) {
-    bar.style.display = 'none'; // 1ページしかなければバーごと隠してスッキリ！
+    bar.style.display = 'none'; 
     return;
   }
   bar.style.display = 'flex';
 
-  // 【前へ】ボタン
   const prevBtn = document.createElement('button');
   prevBtn.className = 'page-btn';
   prevBtn.textContent = '◀ 前へ';
@@ -608,7 +651,6 @@ function renderPaginationBar() {
   prevBtn.addEventListener('click', () => changePage(currentPage - 1));
   bar.appendChild(prevBtn);
 
-  // 各数字ボタン
   for (let i = 1; i <= totalPages; i++) {
     const pageBtn = document.createElement('button');
     pageBtn.className = 'page-btn';
@@ -618,7 +660,6 @@ function renderPaginationBar() {
     bar.appendChild(pageBtn);
   }
 
-  // 【次へ】ボタン
   const nextBtn = document.createElement('button');
   nextBtn.className = 'page-btn';
   nextBtn.textContent = '次へ ▶';
@@ -630,8 +671,6 @@ function renderPaginationBar() {
 function changePage(pageNumber) {
   currentPage = pageNumber;
   renderGallery();
-  
-  // ページを切り替えたら、せっかちなおにーちゃんのためにスクロールをてっぺんに戻すよぅ！
   document.getElementById('gallery-scroll-area').scrollTop = 0;
 }
 
@@ -670,21 +709,16 @@ function createTagButton(tag, count) {
 function toggleTagFilter(tag) {
   document.querySelectorAll('.tag-btn').forEach(btn => {
     if(btn.childNodes[0].textContent.trim() === tag) {
-      btn.classList.toggle('selected');
+      btn.classList.add('selected');
     } else {
       btn.classList.remove('selected');
     }
   });
 
-  if (currentActiveTag === tag) {
-    currentActiveTag = null;
-    filteredData = [...jsonData];
-  } else {
-    currentActiveTag = tag;
-    filteredData = jsonData.filter(item => item.tags && item.tags.includes(tag));
-  }
+  currentActiveTag = tag;
+  filteredData = jsonData.filter(item => item.tags && item.tags.includes(tag));
   
-  currentPage = 1; // フィルター変更時は必ず1ページ目に戻すよぅ！
+  currentPage = 1; 
   renderGallery();
   showTab('gallery');
   executePushUp();
@@ -735,6 +769,7 @@ function searchTagsOnScreen() {
   });
 }
 
+// 🔍 詳細サイドバーオープン処理
 function openDetail(item, index) {
   currentImgIndex = index;
   
@@ -745,12 +780,32 @@ function openDetail(item, index) {
   bigPreviewSrc.src = item.img;
   bigPreviewArea.classList.add('open'); 
 
+  // 🏷️ 【新機能】右上にクリックした画像のタグを動的生成して追加！
+  const tagsContainer = document.getElementById('detail-img-tags-container');
+  tagsContainer.innerHTML = '';
+  if (item.tags && Array.isArray(item.tags)) {
+    item.tags.forEach(tag => {
+      const tagSpan = document.createElement('span');
+      tagSpan.className = 'detail-active-tag';
+      tagSpan.textContent = `#${tag}`;
+      // タグをクリックしたら拡大画面を閉じて、そのタグでギャラリーを爆速フィルタリング！
+      tagSpan.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeDetail();
+        toggleTagFilter(tag);
+      });
+      tagsContainer.appendChild(tagSpan);
+    });
+  }
+
+  // 🎴 【パワーアップ】関連画像を「15枚枠」に変更！
   const similarGrid = document.getElementById('similar-grid');
   similarGrid.innerHTML = '';
   
   const similars = jsonData.filter(all => all.img !== item.img && all.tags.some(t => item.tags.includes(t)));
   
-  similars.slice(0, 9).forEach(sim => {
+  // ★枚数制限を 9 ➔ 15 にガッツリ増殖させたよぅ！
+  similars.slice(0, 15).forEach(sim => {
     const div = document.createElement('div');
     div.className = 'similar-item';
     div.innerHTML = `<img src="${sim.img}">`;
@@ -764,7 +819,6 @@ function openDetail(item, index) {
   sidebar.classList.add('open'); 
 }
 
-// ★ページネーション対応版の左右めくり！全ページ通しでシームレスにめくれるよぅ！
 function navigateImage(direction, event) {
   event.stopPropagation(); 
   
@@ -774,7 +828,6 @@ function navigateImage(direction, event) {
   if (nextIndex >= filteredData.length) nextIndex = 0;
   if (nextIndex < 0) nextIndex = filteredData.length - 1;
 
-  // もしめくった先の画像が「違うページ」のものだったら、自動でページもめくっちゃう神仕様！
   const targetPage = Math.floor(nextIndex / itemsPerPage) + 1;
   if (targetPage !== currentPage) {
     currentPage = targetPage;
