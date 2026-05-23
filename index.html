@@ -78,7 +78,7 @@ body {
   position: relative;
 }
 
-/* 🎬 演出レイヤーA：【濃いめカスタム】黒フェードをガッツリ深くしたタグ画面 */
+/* 🎬 演出レイヤーA：【限界濃厚カスタム】黒フェードを極限まで濃くして透けをミリ単位に抑えたタグ画面 */
 .welcome-tag-layer {
   width: 100%;
   height: 100%;
@@ -89,12 +89,12 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  /* ★黒（#0a0a0a）の領域を75%までガッツリ広げて、フェードの不透明度もガツンと濃くしたよぅ！！！ */
+  /* ★ほぼ画面の85%までを完全な真っ黒にして、消え際のグラデーションも超ドロドロに濃くしたよぅ！！！ */
   background: linear-gradient(to bottom, 
     #0a0a0a 0%, 
-    #0a0a0a 65%, 
-    rgba(10, 10, 10, 0.95) 80%, 
-    rgba(10, 10, 10, 0.6) 90%, 
+    #0a0a0a 75%, 
+    rgba(10, 10, 10, 0.99) 88%, 
+    rgba(10, 10, 10, 0.75) 94%, 
     rgba(10, 10, 10, 0) 100%
   );
   z-index: 30;
@@ -140,7 +140,7 @@ body {
   50% { transform: translateY(10px); color: #ff2a6d; }
 }
 
-/* 🎬 演出レイヤーB：【チラ見えカスタム】最初の下がってくる位置をさらに下げて調整したギャラリー */
+/* 🎬 演出レイヤーB：最初の下がってくる位置をさらに微調整したギャラリー */
 .dynamic-gallery-layer {
   width: 100%;
   height: 100%;
@@ -149,7 +149,7 @@ body {
   left: 0;
   background: #0a0a0a;
   z-index: 20;
-  /* ★前は55%だったのを「68%」までグッと下げたよぅ！これで画像の露出が減って上品にチラ見えするのッ！ */
+  /* ★位置は68%でキープしつつ、上の濃厚フェードと絡み合って極上のチラ見え感になるよぅ！ */
   transform: translateY(68%); 
   transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform;
