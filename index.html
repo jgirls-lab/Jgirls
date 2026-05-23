@@ -307,7 +307,7 @@ body {
 }
 
 /* ==========================================
-   🔍 右側詳細スライドサイドバー
+   🔍 右側詳細スライドサイドバー（極限引き算カスタム）
    ========================================== */
 .detail-sidebar {
   width: 380px;
@@ -327,12 +327,8 @@ body {
 .detail-content { flex: 1; overflow-y: auto; padding: 25px; box-sizing: border-box; }
 .close-btn { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 18px; z-index: 2100; display: flex; align-items: center; justify-content: center; }
 .close-btn:hover { background: #ff2a6d; }
-.detail-main-img-wrap { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 20px; background: #000; }
-.detail-main-img { width: 100%; display: block; animation: fadeIn 0.4s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-.detail-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #fff; }
-.detail-desc { font-size: 13px; color: #888; line-height: 1.5; margin-bottom: 20px; background: #1a1a1a; padding: 12px; border-radius: 8px; }
-.detail-section-title { font-size: 12px; font-weight: bold; color: #ff2a6d; margin-bottom: 12px; letter-spacing: 1px; }
+
+.detail-section-title { font-size: 12px; font-weight: bold; color: #ff2a6d; margin-bottom: 12px; letter-spacing: 1px; margin-top: 35px; }
 .similar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .similar-item { aspect-ratio: 3 / 4; border-radius: 6px; overflow: hidden; cursor: pointer; background: #000; }
 .similar-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.2s; }
@@ -391,11 +387,6 @@ body {
 <div id="detail-sidebar" class="detail-sidebar">
   <button class="close-btn" onclick="closeDetail()">×</button>
   <div class="detail-content">
-    <div class="detail-main-img-wrap"><img id="detail-img" class="detail-main-img" src="" alt="Preview"></div>
-    <div id="detail-title" class="detail-title"></div>
-    <div id="detail-desc" class="detail-desc"></div>
-    <div class="detail-section-title">🏷️ TAGS</div>
-    <div class="tags-flex" id="detail-tags" style="margin-bottom:25px;"></div>
     <div class="detail-section-title">🔥 RELATED ASSETS</div>
     <div id="similar-grid" class="similar-grid"></div>
   </div>
@@ -404,39 +395,27 @@ body {
 
 <script>
 // ========================================================
-// 🧠 【ガチ全自動化コア】外部 data.json を100%自動で読み込むシステム
+// 🧠 完全自動化コアシステム
 // ========================================================
-let jsonData = []; // 最初は空っぽにしておくよ！
+let jsonData = []; 
 let wheelCount = 0; 
 let isPushedUp = false; 
 let currentActiveTag = null;
 
 window.addEventListener('DOMContentLoaded', () => {
-  // 📁 同じフォルダに置いてある「data.json」を直接自動で吸い上げる神アップデート！
   fetch('data.json')
     .then(response => {
-      if (!response.ok) {
-        throw new Error('data.jsonが見つからないか、読み込めないよぅ＞＜');
-      }
+      if (!response.ok) throw new Error('data.jsonが読み込めないよぅ＞＜');
       return response.json();
     })
     .then(data => {
-      jsonData = data; // 読み込んだ本物データをグローバルに格納！
-      
-      // データが準備できたら、各種レンダリングを美しく連動起動！
+      jsonData = data; 
       renderMasonry(jsonData);
       initDynamicTags();
       setupScrollAnimation();
     })
     .catch(error => {
       console.error(error);
-      // 万が一jsonの読み込みが死んだ時のための、バックアップ用お供えデータ
-      jsonData = [
-        { "img": "images/sample1.jpg", "title": "データ読み込みエラー＞＜", "tags": ["エラー"], "desc": "data.jsonがHTMLと同じフォルダに正しく配置されているか確認してね！" }
-      ];
-      renderMasonry(jsonData);
-      initDynamicTags();
-      setupScrollAnimation();
     });
 });
 
@@ -446,14 +425,14 @@ function renderMasonry(data) {
   grid.innerHTML = '';
   
   if(!data || data.length === 0) {
-    grid.innerHTML = '<div style="padding:20px; color:#888;">画像が1枚も登録されてないよぅ...</div>';
+    grid.innerHTML = '<div style="padding:20px; color:#888;">画像が1枚もありません</div>';
     return;
   }
   
   data.forEach(item => {
     const div = document.createElement('div');
     div.className = 'item';
-    div.addEventListener('click', () => openDetail(item));
+    div.addEventListener('click', () => openDetail(item)); // ポチッと押したら右側サイドバーがスライドイン！
     div.innerHTML = `<img src="${item.img}" alt="${item.title}">`;
     grid.appendChild(div);
   });
@@ -519,10 +498,9 @@ function toggleTagFilter(tag) {
   }
 
   showTab('gallery');
-  executePushUp(); // タグが押されたら強制的にガッ！とせり上げ！
+  executePushUp();
 }
 
-// せり上がりアニメーションの共通化
 function executePushUp() {
   document.getElementById('welcome-layer').classList.add('scrolled-up');
   document.getElementById('gallery-layer').classList.add('pushed-up');
@@ -569,39 +547,27 @@ function searchTagsOnScreen() {
   });
 }
 
+// 🔍 右側詳細スライド：おにーちゃんの指定通り、関連画像（RELATED ASSETS）だけを裏で抽出して表示！
 function openDetail(item) {
   const sidebar = document.getElementById('detail-sidebar');
-  document.getElementById('detail-img').src = item.img;
-  document.getElementById('detail-title').innerText = item.title;
-  document.getElementById('detail-desc').innerText = item.desc || "";
-  
-  const tagWrap = document.getElementById('detail-tags');
-  tagWrap.innerHTML = '';
-  if (item.tags) {
-    item.tags.forEach(tag => {
-      const btn = document.createElement('div');
-      btn.className = 'tag-btn';
-      btn.innerText = tag;
-      btn.addEventListener('click', () => { closeDetail(); toggleTagFilter(tag); });
-      tagWrap.appendChild(btn);
-    });
-  }
-
   const similarGrid = document.getElementById('similar-grid');
   similarGrid.innerHTML = '';
+  
+  // 同じカテゴリ（タグ）を持っている他の画像を最大9個シャッフル抽出！
   const similars = jsonData.filter(all => all.img !== item.img && all.tags.some(t => item.tags.includes(t)));
+  
   similars.slice(0, 9).forEach(sim => {
     const div = document.createElement('div');
     div.className = 'similar-item';
     div.innerHTML = `<img src="${sim.img}">`;
-    div.addEventListener('click', () => openDetail(sim));
+    div.addEventListener('click', () => openDetail(sim)); // 連動して中身を切り替え！
     similarGrid.appendChild(div);
   });
 
   sidebar.classList.add('open');
 }
 
-function closeDetail() { document.getElementById('detail-sidebar').classList.remove('open'); }
+function closeDetail() { document.getElementById('detail-sidebar').classList.remove('remove'); document.getElementById('detail-sidebar').classList.remove('open'); }
 
 function showTab(type) {
   const btnG = document.getElementById('btn-gallery');
