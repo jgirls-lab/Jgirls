@@ -187,7 +187,7 @@ body {
 .gallery-scroll-wrap {
   flex: 1;
   overflow-y: auto;
-  padding: 15px;
+  padding: 15px 15px 5px 15px; /* 下部余白調整 */
 }
 
 /* Masonryグリッド */
@@ -219,7 +219,54 @@ body {
 }
 
 /* ==========================================
-   ✨ 【大改造】左側ダイナミック拡大表示レイヤー＆左右ボタン
+   📟 【新機能】超軽量スタイリッシュ・ページネーションバー
+   ========================================== */
+.pagination-container {
+  width: 100%;
+  padding: 20px;
+  background: #0d0d0d;
+  border-top: 1px solid #1a1a1a;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  z-index: 25;
+}
+
+.page-btn {
+  padding: 8px 16px;
+  background: #161616;
+  color: #888;
+  border: 1px solid #252525;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #222;
+  color: #fff;
+  border-color: #444;
+}
+
+.page-btn.active {
+  background: #ff2a6d;
+  color: #fff;
+  border-color: #ff2a6d;
+  box-shadow: 0 0 12px rgba(255, 42, 109, 0.4);
+}
+
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   ✨ 左側ダイナミック拡大表示レイヤー＆左右ボタン
    ========================================== */
 .big-preview-overlay {
   position: absolute;
@@ -251,7 +298,6 @@ body {
   z-index: 41;
 }
 
-/* ★左右のめくりボタンデザイン！ */
 .nav-flip-btn {
   position: absolute;
   top: 50%;
@@ -267,7 +313,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 45; /* 画像の上に配置 */
+  z-index: 45;
   transition: all 0.2s ease;
   user-select: none;
 }
@@ -446,6 +492,8 @@ body {
       <div class="gallery-scroll-wrap" id="gallery-scroll-area">
         <div class="grid" id="masonry-grid"></div>
       </div>
+
+      <div class="pagination-container" id="pagination-bar"></div>
     </div>
 
   </div>
@@ -476,14 +524,18 @@ body {
 
 <script>
 // ========================================================
-// 🧠 完全自動化コアシステム
+// 🧠 完全自動化コアシステム＆ページネーション制御
 // ========================================================
 let jsonData = []; 
-let filteredData = []; // ★現在画面（グリッド）に並んでいる画像リストを追跡！
-let currentImgIndex = -1; // ★今大画面で開いている画像のインデックス番号！
+let filteredData = []; 
+let currentImgIndex = -1; 
 let wheelCount = 0; 
 let isPushedUp = false; 
 let currentActiveTag = null;
+
+// ★ページネーションの設定！
+let currentPage = 1;
+const itemsPerPage = 30; // ★1ページあたりの上限枚数だよぅおにーちゃん！
 
 window.addEventListener('DOMContentLoaded', () => {
   fetch('data.json')
@@ -493,8 +545,10 @@ window.addEventListener('DOMContentLoaded', () => {
     })
     .then(data => {
       jsonData = data; 
-      filteredData = [...data]; // 最初は全データ
-      renderMasonry(filteredData);
+      filteredData = [...data]; 
+      
+      currentPage = 1; // 初期化
+      renderGallery(); // 描写処理を統合！
       initDynamicTags();
       setupScrollAnimation();
     })
@@ -503,51 +557,103 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function renderMasonry(data) {
+// ★現在のページデータだけを切り出してグリッドとページバーを同時に描写する神関数！
+function renderGallery() {
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  
+  // 今のページに表示する画像だけをスライス！
+  const pageItems = filteredData.slice(startIndex, endIndex);
+  
+  renderMasonry(pageItems, startIndex); // グリッド描写（全体の連番を維持するためにstartIndexを渡すよぅ！）
+  renderPaginationBar(); // ページネーションバー描写
+}
+
+function renderMasonry(pageItems, globalStartIndex) {
   const grid = document.getElementById('masonry-grid');
   grid.innerHTML = '';
   
-  if(!data || data.length === 0) {
-    grid.innerHTML = '<div style="padding:20px; color:#888;">画像が1枚もありません</div>';
+  if(!pageItems || pageItems.length === 0) {
+    grid.innerHTML = '<div style="padding:20px; color:#888;">このページには画像がありません</div>';
     return;
   }
   
-  // ★クリックした時に「何番目のアイテムか」を特定できるように引数にindexを渡すよぅ！
-  data.forEach((item, index) => {
+  pageItems.forEach((item, index) => {
+    const globalIndex = globalStartIndex + index; // 左右めくりのための全体通し番号！
     const div = document.createElement('div');
     div.className = 'item';
-    div.addEventListener('click', () => openDetail(item, index)); 
+    div.addEventListener('click', () => openDetail(item, globalIndex)); 
     div.innerHTML = `<img src="${item.img}" alt="${item.title}">`;
     grid.appendChild(div);
   });
 }
 
+// ★動的ページネーションボタン生成システム！
+function renderPaginationBar() {
+  const bar = document.getElementById('pagination-bar');
+  bar.innerHTML = '';
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  if (totalPages <= 1) {
+    bar.style.display = 'none'; // 1ページしかなければバーごと隠してスッキリ！
+    return;
+  }
+  bar.style.display = 'flex';
+
+  // 【前へ】ボタン
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'page-btn';
+  prevBtn.textContent = '◀ 前へ';
+  prevBtn.disabled = currentPage === 1;
+  prevBtn.addEventListener('click', () => changePage(currentPage - 1));
+  bar.appendChild(prevBtn);
+
+  // 各数字ボタン
+  for (let i = 1; i <= totalPages; i++) {
+    const pageBtn = document.createElement('button');
+    pageBtn.className = 'page-btn';
+    if (i === currentPage) pageBtn.classList.add('active');
+    pageBtn.textContent = i;
+    pageBtn.addEventListener('click', () => changePage(i));
+    bar.appendChild(pageBtn);
+  }
+
+  // 【次へ】ボタン
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'page-btn';
+  nextBtn.textContent = '次へ ▶';
+  nextBtn.disabled = currentPage === totalPages;
+  nextBtn.addEventListener('click', () => changePage(currentPage + 1));
+  bar.appendChild(nextBtn);
+}
+
+function changePage(pageNumber) {
+  currentPage = pageNumber;
+  renderGallery();
+  
+  // ページを切り替えたら、せっかちなおにーちゃんのためにスクロールをてっぺんに戻すよぅ！
+  document.getElementById('gallery-scroll-area').scrollTop = 0;
+}
+
 function initDynamicTags() {
   const tagCounts = {};
-  
   jsonData.forEach(item => {
     if (item.tags && Array.isArray(item.tags)) {
-      item.tags.forEach(t => { 
-        tagCounts[t] = (tagCounts[t] || 0) + 1; 
-      });
+      item.tags.forEach(t => { tagCounts[t] = (tagCounts[t] || 0) + 1; });
     }
   });
 
   const sortedTags = Object.keys(tagCounts).sort((a,b) => tagCounts[b] - tagCounts[a]).slice(0, 10);
-
   const welcomeBox = document.getElementById('welcome-hot-tags');
   const stickyBox = document.getElementById('sticky-hot-tags');
   const masterBox = document.getElementById('master-tag-list-container');
   
-  welcomeBox.innerHTML = '';
-  stickyBox.innerHTML = '';
-  masterBox.innerHTML = '';
+  welcomeBox.innerHTML = ''; stickyBox.innerHTML = ''; masterBox.innerHTML = '';
 
   sortedTags.forEach(tag => {
     welcomeBox.appendChild(createTagButton(tag, tagCounts[tag]));
     stickyBox.appendChild(createTagButton(tag, tagCounts[tag]));
   });
-
   Object.keys(tagCounts).sort().forEach(tag => {
     masterBox.appendChild(createTagButton(tag, tagCounts[tag]));
   });
@@ -578,7 +684,8 @@ function toggleTagFilter(tag) {
     filteredData = jsonData.filter(item => item.tags && item.tags.includes(tag));
   }
   
-  renderMasonry(filteredData);
+  currentPage = 1; // フィルター変更時は必ず1ページ目に戻すよぅ！
+  renderGallery();
   showTab('gallery');
   executePushUp();
 }
@@ -628,7 +735,6 @@ function searchTagsOnScreen() {
   });
 }
 
-// ★開くときに、今何番目の画像なのかをしっかりセーブするよぅ！
 function openDetail(item, index) {
   currentImgIndex = index;
   
@@ -650,7 +756,6 @@ function openDetail(item, index) {
     div.innerHTML = `<img src="${sim.img}">`;
     div.addEventListener('click', (e) => {
       e.stopPropagation(); 
-      // 類似画像をクリックしたときは、filteredData外なのでインデックスをリセットして開く
       openDetail(sim, -1); 
     });
     similarGrid.appendChild(div);
@@ -659,28 +764,32 @@ function openDetail(item, index) {
   sidebar.classList.add('open'); 
 }
 
-// ★【新機能】左右ボタンが押されたときに爆速で画像を切り替えるコアロジック！
+// ★ページネーション対応版の左右めくり！全ページ通しでシームレスにめくれるよぅ！
 function navigateImage(direction, event) {
-  event.stopPropagation(); // 背景をクリックして閉じちゃうのを完全にブロック！
+  event.stopPropagation(); 
   
   if (currentImgIndex === -1 || filteredData.length === 0) return;
 
-  // 次のインデックスを計算（無限ループ処理付き！）
   let nextIndex = currentImgIndex + direction;
   if (nextIndex >= filteredData.length) nextIndex = 0;
   if (nextIndex < 0) nextIndex = filteredData.length - 1;
 
-  // 新しい画像で詳細画面を再読み込み！
+  // もしめくった先の画像が「違うページ」のものだったら、自動でページもめくっちゃう神仕様！
+  const targetPage = Math.floor(nextIndex / itemsPerPage) + 1;
+  if (targetPage !== currentPage) {
+    currentPage = targetPage;
+    renderGallery();
+  }
+
   openDetail(filteredData[nextIndex], nextIndex);
 }
 
 function closeDetail() { 
   const sidebar = document.getElementById('detail-sidebar');
   const bigPreviewArea = document.getElementById('big-preview-area');
-  
   if (sidebar) sidebar.classList.remove('open');
   if (bigPreviewArea) bigPreviewArea.classList.remove('open'); 
-  currentImgIndex = -1; // リセット
+  currentImgIndex = -1;
 }
 
 function showTab(type) {
