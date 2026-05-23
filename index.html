@@ -78,7 +78,7 @@ body {
   position: relative;
 }
 
-/* 🎬 演出レイヤーA：【限界濃厚カスタム】黒フェードを極限まで濃くして透けをミリ単位に抑えたタグ画面 */
+/* 🎬 演出レイヤーA：黒フェードを極限まで濃くして透けをミリ単位に抑えたタグ画面 */
 .welcome-tag-layer {
   width: 100%;
   height: 100%;
@@ -89,7 +89,6 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  /* ★ほぼ画面の85%までを完全な真っ黒にして、消え際のグラデーションも超ドロドロに濃くしたよぅ！！！ */
   background: linear-gradient(to bottom, 
     #0a0a0a 0%, 
     #0a0a0a 75%, 
@@ -149,7 +148,6 @@ body {
   left: 0;
   background: #0a0a0a;
   z-index: 20;
-  /* ★位置は68%でキープしつつ、上の濃厚フェードと絡み合って極上のチラ見え感になるよぅ！ */
   transform: translateY(68%); 
   transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform;
@@ -219,6 +217,68 @@ body {
   border-color: #ff2a6d;
   box-shadow: 0 10px 25px rgba(255, 42, 109, 0.2);
 }
+
+/* ==========================================
+   ✨ 【大改造】左側ダイナミック拡大表示レイヤー＆左右ボタン
+   ========================================== */
+.big-preview-overlay {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  width: calc(100% - 380px);
+  height: calc(100% - 60px);
+  background: rgba(5, 5, 5, 0.96);
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s linear;
+  padding: 40px;
+  box-sizing: border-box;
+}
+.big-preview-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.big-preview-img {
+  max-width: 85%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 16px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+  z-index: 41;
+}
+
+/* ★左右のめくりボタンデザイン！ */
+.nav-flip-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(20, 20, 20, 0.6);
+  color: #888;
+  border: 1px solid #333;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 45; /* 画像の上に配置 */
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.nav-flip-btn:hover {
+  color: #fff;
+  background: #ff2a6d;
+  border-color: #ff2a6d;
+  box-shadow: 0 0 15px rgba(255, 42, 109, 0.5);
+}
+.nav-prev { left: 25px; }
+.nav-next { right: 25px; }
 
 /* ==========================================
    🗂️ タグ一覧タブ画面
@@ -318,38 +378,6 @@ body {
 }
 
 /* ==========================================
-   ✨ 左側ダイナミック拡大表示レイヤー
-   ========================================== */
-.big-preview-overlay {
-  position: absolute;
-  top: 60px;
-  left: 0;
-  width: calc(100% - 380px);
-  height: calc(100% - 60px);
-  background: rgba(5, 5, 5, 0.96);
-  z-index: 40;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s linear;
-  padding: 40px;
-  box-sizing: border-box;
-}
-.big-preview-overlay.open {
-  opacity: 1;
-  pointer-events: auto;
-}
-.big-preview-img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  border-radius: 16px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
-}
-
-/* ==========================================
    🔍 右側詳細スライドサイドバー
    ========================================== */
 .detail-sidebar {
@@ -410,7 +438,9 @@ body {
       </div>
       
       <div class="big-preview-overlay" id="big-preview-area" onclick="closeDetail()">
+        <button class="nav-flip-btn nav-prev" id="btn-prev-img" onclick="navigateImage(-1, event)">◀</button>
         <img class="big-preview-img" id="big-preview-src" src="" alt="Big Preview">
+        <button class="nav-flip-btn nav-next" id="btn-next-img" onclick="navigateImage(1, event)">▶</button>
       </div>
       
       <div class="gallery-scroll-wrap" id="gallery-scroll-area">
@@ -449,6 +479,8 @@ body {
 // 🧠 完全自動化コアシステム
 // ========================================================
 let jsonData = []; 
+let filteredData = []; // ★現在画面（グリッド）に並んでいる画像リストを追跡！
+let currentImgIndex = -1; // ★今大画面で開いている画像のインデックス番号！
 let wheelCount = 0; 
 let isPushedUp = false; 
 let currentActiveTag = null;
@@ -461,7 +493,8 @@ window.addEventListener('DOMContentLoaded', () => {
     })
     .then(data => {
       jsonData = data; 
-      renderMasonry(jsonData);
+      filteredData = [...data]; // 最初は全データ
+      renderMasonry(filteredData);
       initDynamicTags();
       setupScrollAnimation();
     })
@@ -479,10 +512,11 @@ function renderMasonry(data) {
     return;
   }
   
-  data.forEach(item => {
+  // ★クリックした時に「何番目のアイテムか」を特定できるように引数にindexを渡すよぅ！
+  data.forEach((item, index) => {
     const div = document.createElement('div');
     div.className = 'item';
-    div.addEventListener('click', () => openDetail(item)); 
+    div.addEventListener('click', () => openDetail(item, index)); 
     div.innerHTML = `<img src="${item.img}" alt="${item.title}">`;
     grid.appendChild(div);
   });
@@ -538,13 +572,13 @@ function toggleTagFilter(tag) {
 
   if (currentActiveTag === tag) {
     currentActiveTag = null;
-    renderMasonry(jsonData);
+    filteredData = [...jsonData];
   } else {
     currentActiveTag = tag;
-    const filtered = jsonData.filter(item => item.tags && item.tags.includes(tag));
-    renderMasonry(filtered);
+    filteredData = jsonData.filter(item => item.tags && item.tags.includes(tag));
   }
-
+  
+  renderMasonry(filteredData);
   showTab('gallery');
   executePushUp();
 }
@@ -594,7 +628,10 @@ function searchTagsOnScreen() {
   });
 }
 
-function openDetail(item) {
+// ★開くときに、今何番目の画像なのかをしっかりセーブするよぅ！
+function openDetail(item, index) {
+  currentImgIndex = index;
+  
   const sidebar = document.getElementById('detail-sidebar');
   const bigPreviewArea = document.getElementById('big-preview-area');
   const bigPreviewSrc = document.getElementById('big-preview-src');
@@ -613,12 +650,28 @@ function openDetail(item) {
     div.innerHTML = `<img src="${sim.img}">`;
     div.addEventListener('click', (e) => {
       e.stopPropagation(); 
-      openDetail(sim); 
+      // 類似画像をクリックしたときは、filteredData外なのでインデックスをリセットして開く
+      openDetail(sim, -1); 
     });
     similarGrid.appendChild(div);
   });
 
   sidebar.classList.add('open'); 
+}
+
+// ★【新機能】左右ボタンが押されたときに爆速で画像を切り替えるコアロジック！
+function navigateImage(direction, event) {
+  event.stopPropagation(); // 背景をクリックして閉じちゃうのを完全にブロック！
+  
+  if (currentImgIndex === -1 || filteredData.length === 0) return;
+
+  // 次のインデックスを計算（無限ループ処理付き！）
+  let nextIndex = currentImgIndex + direction;
+  if (nextIndex >= filteredData.length) nextIndex = 0;
+  if (nextIndex < 0) nextIndex = filteredData.length - 1;
+
+  // 新しい画像で詳細画面を再読み込み！
+  openDetail(filteredData[nextIndex], nextIndex);
 }
 
 function closeDetail() { 
@@ -627,6 +680,7 @@ function closeDetail() {
   
   if (sidebar) sidebar.classList.remove('open');
   if (bigPreviewArea) bigPreviewArea.classList.remove('open'); 
+  currentImgIndex = -1; // リセット
 }
 
 function showTab(type) {
