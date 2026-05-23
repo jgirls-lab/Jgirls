@@ -15,7 +15,7 @@ body {
 }
 
 /* ==========================================
-   左サイドバー
+   左サイドバー（メニュー）
    ========================================== */
 .sidebar {
   width: 220px;
@@ -138,7 +138,7 @@ body {
   left: 0;
   background: #0a0a0a;
   z-index: 20;
-  transition: top 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: top 0.8s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s ease; /* 横幅の変化にアニメーションをかける */
   display: flex;
   flex-direction: column;
 }
@@ -147,7 +147,7 @@ body {
   top: 0;
 }
 
-/* 最上部の固定タグヘッダー */
+/* 固定タグヘッダー */
 .sticky-tag-header {
   width: 100%;
   padding: 15px 20px;
@@ -181,7 +181,13 @@ body {
 .grid {
   column-count: 5;
   column-gap: 12px;
+  transition: all 0.4s ease;
 }
+/* 詳細が開いている時は、左側のグリッドを3列にして縮小させる（見やすさ重視！） */
+.main.detail-open .grid {
+  column-count: 3 !important;
+}
+
 @media (max-width: 1400px) { .grid { column-count: 4; } }
 @media (max-width: 1000px) { .grid { column-count: 3; } }
 
@@ -307,7 +313,44 @@ body {
 }
 
 /* ==========================================
-   🔍 右側詳細スライドサイドバー（極限引き算カスタム）
+   ✨ 【新開発】左側ダイナミック拡大表示レイヤー
+   ========================================== */
+.big-preview-overlay {
+  position: absolute;
+  top: 60px; /* 固定ヘッダーの下から配置 */
+  left: 0;
+  width: calc(100% - 380px); /* 右側サイドバー(380px)のスペースを空ける */
+  height: calc(100% - 60px);
+  background: rgba(5, 5, 5, 0.95); /* 高級感のある超濃厚ブラックシースルー */
+  z-index: 15;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  padding: 30px;
+  box-sizing: border-box;
+}
+.big-preview-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.big-preview-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 42, 109, 0.2);
+  animation: zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes zoomIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ==========================================
+   🔍 右側詳細スライドサイドバー（情報引き算カスタム）
    ========================================== */
 .detail-sidebar {
   width: 380px;
@@ -360,6 +403,10 @@ body {
       <div class="sticky-tag-header">
         <div class="sticky-label">Hot:</div>
         <div class="tags-flex" id="sticky-hot-tags" style="gap:8px;"></div>
+      </div>
+      
+      <div class="big-preview-overlay" id="big-preview-area" onclick="closeDetail()">
+        <img class="big-preview-img" id="big-preview-src" src="" alt="Big Preview">
       </div>
       
       <div class="gallery-scroll-wrap" id="gallery-scroll-area">
@@ -432,7 +479,7 @@ function renderMasonry(data) {
   data.forEach(item => {
     const div = document.createElement('div');
     div.className = 'item';
-    div.addEventListener('click', () => openDetail(item)); // ポチッと押したら右側サイドバーがスライドイン！
+    div.addEventListener('click', () => openDetail(item)); // ポチッと押したら右側サイドバー＆左側拡大が連動！
     div.innerHTML = `<img src="${item.img}" alt="${item.title}">`;
     grid.appendChild(div);
   });
@@ -547,27 +594,49 @@ function searchTagsOnScreen() {
   });
 }
 
-// 🔍 右側詳細スライド：おにーちゃんの指定通り、関連画像（RELATED ASSETS）だけを裏で抽出して表示！
+// 🔍 【連動大改造】画像クリックで「左側大画面拡大」＆「右側サイドバー」を同時に開く！
 function openDetail(item) {
   const sidebar = document.getElementById('detail-sidebar');
+  const mainWindow = document.getElementById('main-content-window');
+  const bigPreviewArea = document.getElementById('big-preview-area');
+  const bigPreviewSrc = document.getElementById('big-preview-src');
+  
+  // 1. 左側の大画面プレビューに、クリックした本物画像をブチ込む！
+  bigPreviewSrc.src = item.img;
+  bigPreviewArea.classList.add('open'); // フェードイン表示！
+
+  // 2. 右側サイドバーの関連画像を生成
   const similarGrid = document.getElementById('similar-grid');
   similarGrid.innerHTML = '';
   
-  // 同じカテゴリ（タグ）を持っている他の画像を最大9個シャッフル抽出！
   const similars = jsonData.filter(all => all.img !== item.img && all.tags.some(t => item.tags.includes(t)));
   
   similars.slice(0, 9).forEach(sim => {
     const div = document.createElement('div');
     div.className = 'similar-item';
     div.innerHTML = `<img src="${sim.img}">`;
-    div.addEventListener('click', () => openDetail(sim)); // 連動して中身を切り替え！
+    div.addEventListener('click', (e) => {
+      e.stopPropagation(); // 親要素のクリックイベントを殺す
+      openDetail(sim); // 連動切り替え！
+    });
     similarGrid.appendChild(div);
   });
 
+  // 3. 全体を「詳細表示モード」にする
+  mainWindow.classList.add('detail-open');
   sidebar.classList.add('open');
 }
 
-function closeDetail() { document.getElementById('detail-sidebar').classList.remove('remove'); document.getElementById('detail-sidebar').classList.remove('open'); }
+// ❌ 閉じる時の連動
+function closeDetail() { 
+  const sidebar = document.getElementById('detail-sidebar');
+  const mainWindow = document.getElementById('main-content-window');
+  const bigPreviewArea = document.getElementById('big-preview-area');
+  
+  if (sidebar) sidebar.classList.remove('open');
+  if (mainWindow) mainWindow.classList.remove('detail-open');
+  if (bigPreviewArea) bigPreviewArea.classList.remove('open'); // 左側大画面を消す！
+}
 
 function showTab(type) {
   const btnG = document.getElementById('btn-gallery');
