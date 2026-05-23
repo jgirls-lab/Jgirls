@@ -2,312 +2,390 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Adult Asset Masonry Gallery</title>
+<title>Ultimate Luxury Masonry Gallery</title>
 
 <style>
 body {
   margin: 0;
-  font-family: sans-serif;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
   display: flex;
-  background: #121212; /* 大人の楽園にふさわしい漆黒のダークモード */
-  color: #eeeeee;
+  background: #0a0a0a; /* 深い漆黒の闇 */
+  color: #e0e0e0;
   overflow: hidden;
 }
 
-/* 左サイドバー */
+/* ==========================================
+   左サイドバー
+   ========================================== */
 .sidebar {
   width: 220px;
   height: 100vh;
-  background: #1e1e1e;
-  border-right: 1px solid #2d2d2d;
-  padding: 20px;
+  background: #111111;
+  border-right: 1px solid #222;
+  padding: 25px 20px;
   box-sizing: border-box;
   flex-shrink: 0;
-  z-index: 10;
+  z-index: 1000;
 }
 
 .logo {
-  font-weight: bold;
-  font-size: 22px;
-  color: #ff3366; /* 妖艶なピンクのアクセントカラー */
-  margin-bottom: 30px;
-  letter-spacing: 1px;
+  font-weight: 900;
+  font-size: 24px;
+  color: #ff2a6d; /* サイバーネオンピンク */
+  text-shadow: 0 0 10px rgba(255, 42, 109, 0.3);
+  margin-bottom: 35px;
+  letter-spacing: 2px;
 }
 
 .tabs button {
   width: 100%;
-  margin-bottom: 12px;
-  padding: 12px;
+  margin-bottom: 15px;
+  padding: 14px;
   border: none;
-  background: #2a2a2a;
-  color: #ccc;
+  background: #1a1a1a;
+  color: #888;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: bold;
-  transition: .2s;
+  font-size: 14px;
+  transition: all 0.3s ease;
 }
 
 .tabs button:hover {
-  background: #3a3a3a;
+  background: #252525;
   color: #fff;
 }
 
 .tabs .active {
-  background: #ff3366;
+  background: #ff2a6d;
   color: white;
+  box-shadow: 0 4px 15px rgba(255, 42, 109, 0.4);
 }
 
-/* メインコンテンツ（中央エリア） */
+/* ==========================================
+   メインコンテンツエリア
+   ========================================== */
 .main {
   flex: 1;
   height: 100vh;
-  overflow-y: auto;
   position: relative;
-  transition: margin-right 0.3s ease; /* 右サイドバーが開いたときに狭まるアニメーション */
+  overflow: hidden;
+}
+
+#gallery-tab-content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* 演出レイヤーA：フェードアウトする中央タグ画面 */
+.welcome-tag-layer {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to bottom, #0a0a0a 60%, rgba(10,10,10,0) 100%);
+  z-index: 10;
+  transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.8s ease;
+}
+
+.welcome-tag-layer.scrolled-up {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.welcome-title {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  color: #ff2a6d;
+  margin-bottom: 30px;
+}
+
+.welcome-tags-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  max-width: 600px;
+  justify-content: center;
+  padding: 20px;
+}
+
+.scroll-hint {
+  margin-top: 40px;
+  font-size: 11px;
+  color: #444;
+  letter-spacing: 2px;
+  animation: bounce 1.5s infinite;
+  cursor: pointer;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(10px); color: #ff2a6d; }
+}
+
+/* 演出レイヤーB：下から「ガッ！」とせり上がるギャラリー画面 */
+.dynamic-gallery-layer {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 100%; 
+  left: 0;
+  background: #0a0a0a;
+  z-index: 20;
+  transition: top 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.dynamic-gallery-layer.pushed-up {
+  top: 0;
+}
+
+/* 最上部の固定タグヘッダー */
+.sticky-tag-header {
+  width: 100%;
+  padding: 15px 20px;
+  background: #111;
+  border-bottom: 1px solid #222;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.sticky-tag-header::-webkit-scrollbar { display: none; }
+
+.sticky-label {
+  font-size: 11px;
+  font-weight: bold;
+  color: #ff2a6d;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ギャラリー内のスクロールエリア */
+.gallery-scroll-wrap {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
 }
 
 /* Masonryグリッド */
 .grid {
   column-count: 5;
   column-gap: 12px;
-  padding: 15px;
 }
-@media (max-width: 1200px) { .grid { column-count: 4; } }
-@media (max-width: 900px) { .grid { column-count: 3; } }
+@media (max-width: 1400px) { .grid { column-count: 4; } }
+@media (max-width: 1000px) { .grid { column-count: 3; } }
 
 .item {
   break-inside: avoid;
   margin-bottom: 12px;
-  background: #1e1e1e;
-  border-radius: 10px;
+  background: #111;
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  border: 1px solid #1a1a1a;
+  transition: all 0.3s ease;
 }
-
 .item img {
   width: 100%;
   display: block;
-  transition: .3s;
+  transition: .4s cubic-bezier(0.25, 1, 0.5, 1);
 }
-
+.item:hover {
+  border-color: #ff2a6d;
+  box-shadow: 0 10px 25px rgba(255, 42, 109, 0.2);
+}
 .item img:hover {
-  transform: scale(1.04);
-  filter: brightness(1.1);
+  transform: scale(1.05);
 }
 
-/* タグ検索エリア（画面のど真ん中ロック） */
-.tag-area {
+/* ==========================================
+   🗂️ タグ一覧タブ画面（JSONから全件美しくリスト化）
+   ========================================== */
+.tag-list-screen {
   display: none;
-  box-sizing: border-box;
   width: 100%;
   height: 100%;
-  justify-content: center;
-  align-items: center;
+  overflow-y: auto;
+  padding: 40px;
+  box-sizing: border-box;
+  background: #0a0a0a;
 }
 
-.tag-container {
+.tag-screen-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.tag-screen-search {
+  margin-bottom: 40px;
+}
+.tag-screen-search input {
   width: 100%;
-  max-width: 550px;
-  padding: 40px 20px;
-  text-align: center;
-}
-
-.search {
-  margin-bottom: 25px;
-}
-
-.search input {
-  width: 100%;
-  padding: 14px 20px;
+  padding: 16px 25px;
   border-radius: 30px;
-  border: 2px solid #333;
-  background: #1e1e1e;
+  border: 2px solid #222;
+  background: #111;
   color: white;
   font-size: 16px;
   box-sizing: border-box;
   outline: none;
-  transition: 0.2s;
+  transition: 0.3s;
+}
+.tag-screen-search input:focus {
+  border-color: #ff2a6d;
+  box-shadow: 0 0 15px rgba(255, 42, 109, 0.2);
 }
 
-.search input:focus {
-  border-color: #ff3366;
+/* JSON内のすべてのタグをずらっと一覧表示する大箱 */
+.all-tags-master-block {
+  background: #111;
+  padding: 30px;
+  border-radius: 16px;
+  border: 1px solid #1a1a1a;
 }
 
-.tags {
+.all-tags-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #ff2a6d;
+  margin-top: 0;
+  margin-bottom: 25px;
+  border-left: 3px solid #ff2a6d;
+  padding-left: 10px;
+  letter-spacing: 1px;
+}
+
+.tags-flex {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
+  gap: 12px;
 }
 
-.tag {
-  padding: 8px 16px;
-  background: #2a2a2a;
-  color: #ccc;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: .2s;
-}
-
-.tag:hover, .tag.selected {
-  background: #ff3366;
-  color: white;
-}
-
-/* 【超重要】右側詳細スライドサイドバー（Google画像検索風） */
-.detail-sidebar {
-  width: 28%; /* 画面の約1/4サイズ */
-  min-width: 350px;
-  height: 100vh;
+.tag-btn {
+  padding: 10px 18px;
   background: #1a1a1a;
-  border-left: 1px solid #2d2d2d;
-  box-shadow: -5px 0 25px rgba(0,0,0,0.5);
-  position: fixed;
-  right: -35%; /* 初期状態は画面の外に隠す */
-  top: 0;
-  z-index: 100;
-  transition: right 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-  display: flex;
-  flex-direction: column;
-}
-
-/* スライドバーが開いているときのクラス */
-.detail-sidebar.open {
-  right: 0;
-}
-
-/* 詳細バーのスクロールエリア */
-.detail-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.close-btn {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  background: rgba(0,0,0,0.6);
-  color: white;
-  border: none;
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
+  color: #aaa;
+  border-radius: 30px;
   cursor: pointer;
-  font-size: 18px;
-  font-weight: bold;
-  z-index: 110;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid #222;
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-.close-btn:hover { background: #ff3366; }
-
-/* 拡大メイン画像（ふわっと表示用） */
-.detail-main-img-wrap {
-  width: 100%;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 20px;
-  background: #000;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  gap: 6px;
 }
 
-.detail-main-img {
-  width: 100%;
-  display: block;
-  animation: fadeIn 0.4s ease; /* ふわっと拡大表示 */
+/* ネオンホバー効果 */
+.tag-btn:hover, .tag-btn.selected {
+  background: #ff2a6d;
+  color: #fff;
+  border-color: #ff2a6d;
+  box-shadow: 0 0 15px rgba(255, 42, 109, 0.6);
+  transform: translateY(-2px);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.97); }
-  to { opacity: 1; transform: scale(1); }
+/* 件数バッジ */
+.tag-count {
+  font-size: 10px;
+  background: #2a2a2a;
+  color: #888;
+  padding: 2px 6px;
+  border-radius: 10px;
 }
-
-.detail-title {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 10px;
+.tag-btn:hover .tag-count, .tag-btn.selected .tag-count {
+  background: rgba(255,255,255,0.2);
   color: #fff;
 }
 
-.detail-desc {
-  font-size: 13px;
-  color: #aaa;
-  line-height: 1.5;
-  margin-bottom: 20px;
-  background: #222;
-  padding: 12px;
-  border-radius: 8px;
-}
-
-/* 詳細バー上部のタグ一覧 */
-.detail-section-title {
-  font-size: 14px;
-  font-weight: bold;
-  color: #ff3366;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.detail-tags {
+/* ==========================================
+   🔍 右側詳細スライドサイドバー
+   ========================================== */
+.detail-sidebar {
+  width: 380px;
+  height: 100vh;
+  background: #111;
+  border-left: 1px solid #222;
+  position: fixed;
+  right: -400px;
+  top: 0;
+  z-index: 2000;
+  transition: right 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 25px;
+  flex-direction: column;
 }
+.detail-sidebar.open { right: 0; }
 
-/* 【右下】類似画像グリッド（3列×3行＝最大9個） */
-.similar-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 11fr);
-  gap: 8px;
-}
-
-.similar-item {
-  aspect-ratio: 3 / 4; /* 縦長比率に統一して美しく並べる */
-  border-radius: 6px;
-  overflow: hidden;
-  cursor: pointer;
-  background: #000;
-}
-
-.similar-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: 0.2s;
-}
+.detail-content { flex: 1; overflow-y: auto; padding: 25px; box-sizing: border-box; }
+.close-btn { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 18px; z-index: 2100; display: flex; align-items: center; justify-content: center; }
+.close-btn:hover { background: #ff2a6d; }
+.detail-main-img-wrap { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 20px; background: #000; }
+.detail-main-img { width: 100%; display: block; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+.detail-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #fff; }
+.detail-desc { font-size: 13px; color: #888; line-height: 1.5; margin-bottom: 20px; background: #1a1a1a; padding: 12px; border-radius: 8px; }
+.detail-section-title { font-size: 12px; font-weight: bold; color: #ff2a6d; margin-bottom: 12px; letter-spacing: 1px; }
+.similar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.similar-item { aspect-ratio: 3 / 4; border-radius: 6px; overflow: hidden; cursor: pointer; background: #000; }
+.similar-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.2s; }
 .similar-item img:hover { filter: brightness(1.2); }
-
 </style>
 </head>
 
 <body>
 
 <div class="sidebar">
-  <div class="logo">🎴 LUXE_GRID</div>
-
+  <div class="logo">LUXE_GRID</div>
   <div class="tabs">
     <button class="active" id="btn-gallery" onclick="showTab('gallery')">ギャラリー</button>
     <button id="btn-search" onclick="showTab('search')">タグ一覧</button>
   </div>
 </div>
 
-<div id="main-area" class="main">
+<div class="main" id="main-content-window">
 
-  <div class="grid" id="gallery"></div>
+  <div id="gallery-tab-content">
+    
+    <div class="welcome-tag-layer" id="welcome-layer">
+      <div class="welcome-title">Select Hot Tags</div>
+      <div class="welcome-tags-box" id="welcome-hot-tags"></div>
+      <div class="scroll-hint">▼ SCROLL DOWN TO EXPLORE ▼</div>
+    </div>
 
-  <div class="tag-area" id="tagArea">
-    <div class="tag-container">
-      <div class="search">
-        <input type="text" id="tag-search-input" oninput="filterTags()" placeholder="タグを検索...">
+    <div class="dynamic-gallery-layer" id="gallery-layer">
+      <div class="sticky-tag-header">
+        <div class="sticky-label">Hot:</div>
+        <div class="tags-flex" id="sticky-hot-tags" style="gap:8px;"></div>
       </div>
-      <div class="tags" id="master-tag-list"></div>
+      
+      <div class="gallery-scroll-wrap" id="gallery-scroll-area">
+        <div class="grid" id="masonry-grid"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="tag-list-screen" id="tag-list-screen">
+    <div class="tag-screen-container">
+      <div class="tag-screen-search">
+        <input type="text" id="tag-search-input" oninput="searchTagsOnScreen()" placeholder="登録されたすべてのタグから検索...">
+      </div>
+      
+      <div class="all-tags-master-block">
+        <div class="all-tags-title">🏷️ ALL TAGS INDEX</div>
+        <div class="tags-flex" id="master-tag-list-container"></div>
+      </div>
     </div>
   </div>
 
@@ -315,19 +393,13 @@ body {
 
 <div id="detail-sidebar" class="detail-sidebar">
   <button class="close-btn" onclick="closeDetail()">×</button>
-  
   <div class="detail-content">
-    <div class="detail-main-img-wrap">
-      <img id="detail-img" class="detail-main-img" src="" alt="Preview">
-    </div>
-    
-    <div id="detail-title" class="detail-title">無題のアセット</div>
-    <div id="detail-desc" class="detail-desc">説明文がありません。</div>
-    
-    <div class="detail-section-title">🏷️ 登録タグ</div>
-    <div id="detail-tags" class="detail-tags"></div>
-    
-    <div class="detail-section-title">🔥 関連・類似アセット</div>
+    <div class="detail-main-img-wrap"><img id="detail-img" class="detail-main-img" src="" alt="Preview"></div>
+    <div id="detail-title" class="detail-title"></div>
+    <div id="detail-desc" class="detail-desc"></div>
+    <div class="detail-section-title">🏷️ TAGS</div>
+    <div class="tags-flex" id="detail-tags" style="margin-bottom:25px;"></div>
+    <div class="detail-section-title">🔥 RELATED ASSETS</div>
     <div id="similar-grid" class="similar-grid"></div>
   </div>
 </div>
@@ -335,208 +407,241 @@ body {
 
 <script>
 // ========================================================
-// ⚙️ 【データ設定エリア】さっきのツールで生成したJSONをここに貼り付けてね！
+// ⚙️ 【データ設定エリア】おにーちゃんのJSONデータをここに丸ごと貼り付けてね！
 // ========================================================
 const jsonData = [
   {
     "img": "images/sample1.jpg",
     "title": "黒髪ロングのメイドさん",
-    "category": "news",
     "tags": ["メイド", "黒髪ロング", "絶対領域", "高画質"],
-    "desc": "Stable Diffusion XLで錬成した至高のメイドアセットです。くい込みショーツが大変セクシーな仕上がりとなっております。"
+    "desc": "くい込みショーツが大変セクシーな至高のメイドです。"
   },
   {
     "img": "images/sample2.jpg",
     "title": "白レースのセクシーショーツ",
-    "category": "event",
-    "tags": ["ビキニ", "レース", "下着", "お姉さん"],
-    "desc": "透明感のある白レースにこだわった、大人のお姉さんグラビア風ポーズ画像です。"
+    "tags": ["ビキニ", "下着", "お姉さん", "レース"],
+    "desc": "透明感のある白レースにこだわったグラビア風ポーズ画像。"
   },
   {
     "img": "images/sample3.jpg",
     "title": "ツインテールJK風スイムウェア",
-    "category": "news",
     "tags": ["ツインテール", "JK風", "ビキニ", "高画質"],
-    "desc": "真夏のプールサイドをイメージした、ツインテールが眩しい甘口セクシーアセットです。"
+    "desc": "真夏のプールサイドをイメージした、甘口セクシーアセット。"
   },
   {
     "img": "images/sample4.jpg",
     "title": "エプロンのみの破壊力",
-    "category": "news",
     "tags": ["メイド", "エプロン", "裸エプロン", "黒髪ロング"],
-    "desc": "限界突破のシチュエーション。LoRAの学習ソースとしても非常に強力に機能します。"
+    "desc": "限界突破のシチュエーション。LoRAの学習ソースに最適。"
   }
 ];
 
 // ========================================================
-// 🧠 システムコア・JavaScriptコード
+// 🧠 完全連動コア・JavaScriptシステム
 // ========================================================
 
-let currentActiveTag = null; // 現在選択されている絞り込みタグ
+let wheelCount = 0; 
+let isPushedUp = false; 
+let currentActiveTag = null;
 
-// ページ読み込み時に初期化を実行
 window.addEventListener('DOMContentLoaded', () => {
-  renderGallery(jsonData);
-  generateMasterTags();
+  // 1. JSONデータを元に、imagesフォルダ内の画像を実数レンダリング！
+  renderMasonry(jsonData);
+  // 2. JSON内のタグを完全集計して、すべての画面のタグボタンを自動生成！
+  initDynamicTags();
+  // 3. 3スクロールアニメーションを起動
+  setupScrollAnimation();
 });
 
-// 1. ギャラリー（Masonry）をJSONデータから全自動生成する関数
-function renderGallery(data) {
-  const gallery = document.getElementById('gallery');
-  gallery.innerHTML = ''; // 一度リセット
-
-  data.forEach((item, index) => {
-    const itemDiv = document.createElement('div');
-    itemDiv.className = 'item';
-    // クリックされたら、その画像データを右サイドバーに送るよ！
-    itemDiv.addEventListener('click', () => openDetail(item));
+// 1. ギャラリー画像生成（JSONに書かれた実画像を完全に参照）
+function renderMasonry(data) {
+  const grid = document.getElementById('masonry-grid');
+  grid.innerHTML = '';
+  
+  data.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.addEventListener('click', () => openDetail(item));
     
-    itemDiv.innerHTML = `<img src="${item.img}" alt="${item.title}" onerror="this.src='https://picsum.photos/300/400';">`;
-    gallery.appendChild(itemDiv);
+    // ✨ ここでおにーちゃんの指定した「images/ファイル名」を完全に参照してるよ！
+    div.innerHTML = `<img src="${item.img}" alt="${item.title}">`;
+    grid.appendChild(div);
   });
 }
 
-// 2. 全画像データから登録されているタグを重複なく自動集計して「タグ一覧」を作る関数
-function generateMasterTags() {
-  const masterTagList = document.getElementById('master-tag-list');
-  masterTagList.innerHTML = '';
-
-  const tagSet = new Set();
+// 2. JSONデータからタグと登録件数を100%全自動で集計・展開するシステム
+function initDynamicTags() {
+  const tagCounts = {};
+  
+  // JSONの中身をすべて舐めて、登録タグとその件数をガチ集計
   jsonData.forEach(item => {
     if (item.tags && Array.isArray(item.tags)) {
-      item.tags.forEach(tag => tagSet.add(tag));
+      item.tags.forEach(t => { 
+        tagCounts[t] = (tagCounts[t] || 0) + 1; 
+      });
     }
   });
 
-  tagSet.forEach(tag => {
-    const tagEl = document.createElement('div');
-    tagEl.className = 'tag';
-    tagEl.innerText = tag;
-    tagEl.addEventListener('click', () => toggleTagFilter(tag, tagEl));
-    masterTagList.appendChild(tagEl);
+  // 件数が多い順にソートして、上位10件の「Hotタグ」を抽出
+  const sortedTags = Object.keys(tagCounts).sort((a,b) => tagCounts[b] - tagCounts[a]).slice(0, 10);
+
+  // 各画面のコンテナをリセットして配置
+  const welcomeBox = document.getElementById('welcome-hot-tags');
+  const stickyBox = document.getElementById('sticky-hot-tags');
+  const masterBox = document.getElementById('master-tag-list-container');
+  
+  welcomeBox.innerHTML = '';
+  stickyBox.innerHTML = '';
+  masterBox.innerHTML = '';
+
+  // ギャラリー中央＆ヘッダーに厳選10個を配置
+  sortedTags.forEach(tag => {
+    welcomeBox.appendChild(createTagButton(tag, tagCounts[tag]));
+    stickyBox.appendChild(createTagButton(tag, tagCounts[tag]));
+  });
+
+  // 「タグ一覧」タブ側には、JSONに含まれる全タグを漏れなくずらっと配置！
+  Object.keys(tagCounts).sort().forEach(tag => {
+    masterBox.appendChild(createTagButton(tag, tagCounts[tag]));
   });
 }
 
-// 3. タグ検索欄の文字入力で、中央のタグ一覧をリアルタイム絞り込みする関数
-function filterTags() {
-  const query = document.getElementById('tag-search-input').value.toLowerCase();
-  const tags = document.querySelectorAll('#master-tag-list .tag');
-  
-  tags.forEach(tagEl => {
-    const text = tagEl.innerText.toLowerCase();
-    if (text.includes(query)) {
-      tagEl.style.display = 'block';
+// タグボタンのHTML要素を綺麗に作る共通関数
+function createTagButton(tag, count) {
+  const div = document.createElement('div');
+  div.className = 'tag-btn';
+  div.innerHTML = `${tag} <span class="tag-count">${count}</span>`;
+  div.addEventListener('click', () => toggleTagFilter(tag));
+  return div;
+}
+
+// 3. タグ選択時のギャラリーフィルタリング（100%同期）
+function toggleTagFilter(tag) {
+  // 画面上の全タグボタンのビジュアル（ネオン）を同期制御
+  document.querySelectorAll('.tag-btn').forEach(btn => {
+    if(btn.childNodes[0].textContent.trim() === tag) {
+      btn.classList.toggle('selected');
     } else {
-      tagEl.style.display = 'none';
+      btn.classList.remove('selected');
     }
+  });
+
+  if (currentActiveTag === tag) {
+    currentActiveTag = null;
+    renderMasonry(jsonData); // 全表示に戻す
+  } else {
+    currentActiveTag = tag;
+    // JSONを検索して、そのタグ持ち画像だけを抽出！
+    const filtered = jsonData.filter(item => item.tags && item.tags.includes(tag));
+    renderMasonry(filtered);
+  }
+
+  // タグが押されたら、強制的に「ギャラリーせり上がり状態」にしてお披露目！
+  showTab('gallery');
+  document.getElementById('welcome-layer').classList.add('scrolled-up');
+  document.getElementById('gallery-layer').classList.add('pushed-up');
+  isPushedUp = true;
+  wheelCount = 3;
+}
+
+// 3スクロール連動アニメーションシステム
+function setupScrollAnimation() {
+  const mainWindow = document.getElementById('main-content-window');
+  const welcomeLayer = document.getElementById('welcome-layer');
+  const galleryLayer = document.getElementById('gallery-layer');
+  const galleryScroll = document.getElementById('gallery-scroll-area');
+
+  mainWindow.addEventListener('wheel', (e) => {
+    if (document.getElementById('gallery-tab-content').style.display === 'none') return;
+
+    if (!isPushedUp) {
+      if (e.deltaY > 0) {
+        wheelCount++;
+        if (wheelCount >= 3) executePushUp();
+      }
+    } else {
+      if (e.deltaY < 0 && galleryScroll.scrollTop === 0) {
+        wheelCount--;
+        if (wheelCount <= 0) executePullDown();
+      }
+    }
+  });
+
+  document.querySelector('.scroll-hint').addEventListener('click', executePushUp);
+
+  function executePushUp() {
+    welcomeLayer.classList.add('scrolled-up');
+    galleryLayer.classList.add('pushed-up');
+    isPushedUp = true;
+    wheelCount = 3;
+  }
+
+  function executePullDown() {
+    welcomeLayer.classList.remove('scrolled-up');
+    galleryLayer.classList.remove('pushed-up');
+    isPushedUp = false;
+    wheelCount = 0;
+  }
+}
+
+// タグ一覧画面内のリアルタイム文字検索
+function searchTagsOnScreen() {
+  const query = document.getElementById('tag-search-input').value.toLowerCase();
+  document.querySelectorAll('#master-tag-list-container .tag-btn').forEach(btn => {
+    const txt = btn.childNodes[0].textContent.trim().toLowerCase();
+    btn.style.display = txt.includes(query) ? 'flex' : 'none';
   });
 }
 
-// 4. タグがクリックされた時に、そのタグが含まれる画像だけにギャラリーを絞り込む関数
-function toggleTagFilter(tag, element) {
-  const allTags = document.querySelectorAll('#master-tag-list .tag');
-  
-  if (currentActiveTag === tag) {
-    // すでに選択されているタグをもう一度押したら解除
-    currentActiveTag = null;
-    allTags.forEach(t => t.classList.remove('selected'));
-    renderGallery(jsonData); // 全表示に戻す
-  } else {
-    // 新しくタグを選択
-    currentActiveTag = tag;
-    allTags.forEach(t => t.classList.remove('selected'));
-    element.classList.add('selected');
-    
-    // そのタグを保有する画像だけを抽出
-    const filteredData = jsonData.filter(item => item.tags && item.tags.includes(tag));
-    renderGallery(filteredData);
-  }
-  
-  // 絞り込んだら自動でギャラリータブへ画面を戻してあげる親切設計！
-  showTab('gallery');
-}
-
-// 5. 【大本命】Google風右側詳細サイドバーを開く神関数
+// 右側詳細スライドサイドバーを開く
 function openDetail(item) {
   const sidebar = document.getElementById('detail-sidebar');
-  const mainArea = document.getElementById('main-area');
-  
-  // 各要素にデータを流し込む
   document.getElementById('detail-img').src = item.img;
   document.getElementById('detail-title').innerText = item.title;
-  document.getElementById('detail-desc').innerText = item.desc || "説明文はありません。";
+  document.getElementById('detail-desc').innerText = item.desc || "";
   
-  // 上部タグエリアの生成
   const tagWrap = document.getElementById('detail-tags');
   tagWrap.innerHTML = '';
-  if (item.tags && item.tags.length > 0) {
+  if (item.tags) {
     item.tags.forEach(tag => {
-      const t = document.createElement('div');
-      t.className = 'tag';
-      t.innerText = tag;
-      // 詳細バーの中のタグを押しても絞り込みが連動して動くよ！
-      t.addEventListener('click', () => {
-        closeDetail();
-        const masterTags = document.querySelectorAll('#master-tag-list .tag');
-        masterTags.forEach(mt => {
-          if(mt.innerText === tag) toggleTagFilter(tag, mt);
-        });
-      });
-      tagWrap.appendChild(t);
+      const btn = document.createElement('div');
+      btn.className = 'tag-btn';
+      btn.innerText = tag;
+      btn.addEventListener('click', () => { closeDetail(); toggleTagFilter(tag); });
+      tagWrap.appendChild(btn);
     });
   }
 
-  // 下部：類似画像（共通のタグが1つでもある画像を最大9個抽出）の自動計算システム
+  // 類似画像（同じタグ持ちを最大9個抽出）
   const similarGrid = document.getElementById('similar-grid');
   similarGrid.innerHTML = '';
-  
-  const similarItems = jsonData.filter(allItem => {
-    // 自分自身は除外する
-    if (allItem.img === item.img) return false;
-    // 共通のタグがあるかチェック
-    return allItem.tags && allItem.tags.some(t => item.tags.includes(t));
+  const similars = jsonData.filter(all => all.img !== item.img && all.tags.some(t => item.tags.includes(t)));
+  similars.slice(0, 9).forEach(sim => {
+    const div = document.createElement('div');
+    div.className = 'similar-item';
+    div.innerHTML = `<img src="${sim.img}">`;
+    div.addEventListener('click', () => openDetail(sim));
+    similarGrid.appendChild(div);
   });
 
-  // 抽出された類似画像を最大9個（3×3）だけ切り取ってループ生成
-  similarItems.slice(0, 9).forEach(simItem => {
-    const simDiv = document.createElement('div');
-    simDiv.className = 'similar-item';
-    simDiv.innerHTML = `<img src="${simItem.img}" alt="${simItem.title}" onerror="this.src='https://picsum.photos/100/130';">`;
-    // 類似画像をクリックしたら、詳細バーの中身がその画像の情報にふわっと切り替わる神連動！
-    simDiv.addEventListener('click', () => openDetail(simItem));
-    similarGrid.appendChild(simDiv);
-  });
-
-  // サイドバーを画面右側からニュッと出現させるクラスを付与
   sidebar.classList.add('open');
-  // 中央メインエリアの右マージンを開けて、詳細バーと被らないように画面を縮めるよ！
-  mainArea.style.marginRight = '28%';
 }
 
-// Rightサイドバーを閉じる関数
-function closeDetail() {
-  document.getElementById('detail-sidebar').classList.remove('open');
-  document.getElementById('main-area').style.marginRight = '0';
-}
+function closeDetail() { document.getElementById('detail-sidebar').classList.remove('open'); }
 
-// 6. 左サイドバーのタブ切り替え制御関数
 function showTab(type) {
-  const btnGallery = document.getElementById('btn-gallery');
-  const btnSearch = document.getElementById('btn-search');
-  const gallery = document.getElementById('gallery');
-  const tagArea = document.getElementById('tagArea');
+  const btnG = document.getElementById('btn-gallery');
+  const btnS = document.getElementById('btn-search');
+  const gTab = document.getElementById('gallery-tab-content');
+  const sTab = document.getElementById('tag-list-screen');
 
   if (type === 'gallery') {
-    btnGallery.classList.add('active');
-    btnSearch.classList.remove('active');
-    gallery.style.display = 'block';
-    tagArea.style.display = 'none';
+    btnG.classList.add('active'); btnS.classList.remove('active');
+    gTab.style.display = 'block'; sTab.style.display = 'none';
   } else {
-    btnGallery.classList.remove('active');
-    btnSearch.classList.add('active');
-    gallery.style.display = 'none';
-    tagArea.style.display = 'flex'; // 縦中央を維持するためにflexで開くよ！
-    closeDetail(); // タグ一覧を見るときは邪魔にならないように一回詳細バーを閉じる親切設計
+    btnG.classList.remove('active'); btnS.classList.add('active');
+    gTab.style.display = 'none'; sTab.style.display = 'block';
+    closeDetail();
   }
 }
 </script>
