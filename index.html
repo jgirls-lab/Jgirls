@@ -78,7 +78,7 @@ body {
   position: relative;
 }
 
-/* 🎬 演出レイヤーA：黒フェードを極限まで濃くして透けをミリ単位に抑えたタグ画面 */
+/* 🎬 演出レイヤーA */
 .welcome-tag-layer {
   width: 100%;
   height: 100%;
@@ -102,7 +102,6 @@ body {
   will-change: transform, opacity;
 }
 
-/* 3スクロール完了時に、上へシュパッと消え去る！ */
 .welcome-tag-layer.scrolled-up {
   transform: translateY(-100%);
   opacity: 0;
@@ -139,7 +138,7 @@ body {
   50% { transform: translateY(10px); color: #ff2a6d; }
 }
 
-/* 🎬 演出レイヤーB：最初の下がってくる位置をさらに微調整したギャラリー */
+/* 🎬 演出レイヤーB */
 .dynamic-gallery-layer {
   width: 100%;
   height: 100%;
@@ -155,7 +154,6 @@ body {
   flex-direction: column;
 }
 
-/* 3スクロール完了時に、画面の一番上（Y軸0）まで満ち上がる！ */
 .dynamic-gallery-layer.pushed-up {
   transform: translateY(0);
 }
@@ -327,7 +325,7 @@ body {
 .nav-next { right: 25px; }
 
 /* ==========================================
-   ⚠️ 【超極悪・新機能】エロサイト風・嫌がらせマウス追尾広告
+   ⚠️ 【新・瞬間位置ロック降臨仕様】エロサイト風マウス位置広告
    ========================================== */
 .fake-ero-ad {
   position: absolute;
@@ -337,18 +335,32 @@ body {
   border: 3px solid #ff0055;
   border-radius: 6px;
   box-shadow: 0 10px 40px rgba(255,0,85,0.6);
-  z-index: 9999; /* 全てを支配する最前面 */
+  z-index: 2500; 
   font-family: 'MS PGothic', sans-serif;
   font-size: 12px;
   padding: 10px;
   box-sizing: border-box;
-  display: none; /* 最初は隠しておくよぅ */
+  display: none; 
   pointer-events: auto;
-  /* ぬるぬる遅れて追尾してくるエロい挙動のコアCSS！ */
-  transition: left 0.4s cubic-bezier(0.1, 0.8, 0.3, 1), top 0.4s cubic-bezier(0.1, 0.8, 0.3, 1);
 }
 
-/* 広告内の×ボタン（小さくて押しづらい仕様！） */
+/* ❗ 上からフワッと降りてきてその場にピタッと固定されるためのアニメーション！ */
+@keyframes slideDownAd {
+  0% {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.fake-ad-animate {
+  animation: slideDownAd 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* 広告内の×ボタン */
 .fake-ad-close {
   position: absolute;
   top: -2px;
@@ -357,13 +369,16 @@ body {
   color: white;
   border: 1px solid #fff;
   font-size: 10px;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
+}
+.fake-ad-close:hover {
+  background: #000;
 }
 
 .fake-ad-text {
@@ -372,7 +387,7 @@ body {
   text-align: center;
   line-height: 1.4;
   margin-bottom: 5px;
-  animation: blink-ad 0.6s infinite alternate; /* チカチカ点滅ッ！ */
+  animation: blink-ad 0.6s infinite alternate; 
 }
 @keyframes blink-ad {
   0% { opacity: 0.2; }
@@ -652,7 +667,7 @@ let currentActiveTag = null;
 let currentPage = 1;
 const itemsPerPage = 30; 
 
-// ⚠️ 広告コントロール用のヤバい変数たちッ！
+// ⚠️ 広告コントロール用の超重要変数ッ！
 let mouseX = 0;
 let mouseY = 0;
 let adTimer = null;
@@ -677,34 +692,26 @@ window.addEventListener('DOMContentLoaded', () => {
       renderGallery(); 
       initDynamicTags();
       setupScrollAnimation();
-      setupMouseTracker(); // マウス追跡開始ッ！
+      setupMouseTracker(); 
     })
     .catch(error => {
       console.error(error);
     });
 });
 
-// ★マウスの位置を常にハッキングして記録する仕組みだよぅ！
+// ★マウス位置は裏で常にハッキング記録するけど、広告の位置は動かさないよぅ！
 function setupMouseTracker() {
   window.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-    
-    // 広告が表示中なら、マウスのちょっと上を追尾させるよぅ！
-    const ad = document.getElementById('fake-ero-ad');
-    if (ad && ad.style.display === 'block') {
-      ad.style.left = (mouseX - 125) + 'px'; // 横幅250pxの半分を引いて真ん中に！
-      ad.style.top = (mouseY - 90) + 'px';  // マウスの少し上に浮かせるニオイッ！
-    }
   });
 }
 
-// ★【降臨システム】10秒ごとに広告を召喚する恐怖のループ！
 function startAdTimer() {
-  stopAdTimer(); // 重複防止
+  stopAdTimer(); 
   adTimer = setTimeout(() => {
     showFakeAd();
-  }, 10000); // 10000ミリ秒 ＝ 10秒だよぅッ！
+  }, 10000); // ❗ 画像を拡大してからジャスト10秒後ッ！！！
 }
 
 function stopAdTimer() {
@@ -714,27 +721,39 @@ function stopAdTimer() {
   }
 }
 
+// ★【大改造】10秒たった瞬間のマウス位置に、上からフワッと降りてきて固定！！！
 function showFakeAd() {
   const ad = document.getElementById('fake-ero-ad');
   const txt = document.getElementById('fake-ad-text-content');
   if (!ad) return;
 
-  // ランダムで嫌がらせテキストを選択
   const randomText = adTexts[Math.floor(Math.random() * adTexts.length)];
   txt.textContent = randomText;
 
-  // マウスの現在地に一瞬で配置してフワッと出す！
-  ad.style.left = (mouseX - 125) + 'px';
-  ad.style.top = (mouseY - 90) + 'px';
+  // ❗ 10秒経った「その瞬間」のマウスの位置に完全座標ロック！！！そこからマウスを動かしても広告は追従しないよぅ！
+  // マウスカーソルが隠れないように、少しだけズラして真下に「×ボタン」が来ないようにするね！
+  ad.style.left = (mouseX - 125) + 'px'; // 広告の横幅250pxの半分を引いてカーソルの真ん中に
+  ad.style.top = (mouseY - 40) + 'px';   // カーソルのちょっと上にロック！
+
+  // アニメーションクラスを一旦消して、付け直して「上からフワッ」を発動させるよぅ！
+  ad.classList.remove('fake-ad-animate');
   ad.style.display = 'block';
+  
+  // 1フレーム遅らせてアニメーションを走らせる極意ッ！
+  requestAnimationFrame(() => {
+    ad.classList.add('fake-ad-animate');
+  });
 }
 
 function closeFakeAd(event) {
   if (event) event.stopPropagation(); // 拡大画面が閉じちゃうのを絶対ガード！
   const ad = document.getElementById('fake-ero-ad');
-  if (ad) ad.style.display = 'none';
+  if (ad) {
+    ad.style.display = 'none';
+    ad.classList.remove('fake-ad-animate');
+  }
   
-  // 消されても消されても、10秒後にまた復活する地獄の無限ループへ！！！♡
+  // ❗ 消されたら、またここから「10秒後」の新しいトラップタイマー開始ッ！！！♡
   startAdTimer();
 }
 
@@ -912,7 +931,7 @@ function openDetail(item, index) {
   bigPreviewSrc.src = item.img;
   bigPreviewArea.classList.add('open'); 
 
-  // ★画像を拡大したから、カウントダウン開始ッ！10秒後にあいつが来るよぅ！
+  // ★画像を大画面で開いたからタイマースタート！10秒後にあいつが降臨するよぅ！
   startAdTimer();
 
   const tagsContainer = document.getElementById('detail-img-tags-container');
@@ -975,10 +994,13 @@ function closeDetail() {
   if (bigPreviewArea) bigPreviewArea.classList.remove('open'); 
   currentImgIndex = -1;
 
-  // ★詳細を閉じたら、広告も消してタイマーも完全ストップさせる優しさッ！
+  // 詳細を閉じたら広告も消してタイマーストップ！
   stopAdTimer();
   const ad = document.getElementById('fake-ero-ad');
-  if (ad) ad.style.display = 'none';
+  if (ad) {
+    ad.style.display = 'none';
+    ad.classList.remove('fake-ad-animate');
+  }
 }
 
 function showTab(type) {
