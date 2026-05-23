@@ -210,7 +210,7 @@ body {
 }
 
 /* ==========================================
-   🗂️ タグ一覧タブ画面（JSONから全件美しくリスト化）
+   🗂️ タグ一覧タブ画面
    ========================================== */
 .tag-list-screen {
   display: none;
@@ -247,7 +247,6 @@ body {
   box-shadow: 0 0 15px rgba(255, 42, 109, 0.2);
 }
 
-/* JSON内のすべてのタグをずらっと一覧表示する大箱 */
 .all-tags-master-block {
   background: #111;
   padding: 30px;
@@ -287,7 +286,6 @@ body {
   gap: 6px;
 }
 
-/* ネオンホバー効果 */
 .tag-btn:hover, .tag-btn.selected {
   background: #ff2a6d;
   color: #fff;
@@ -296,7 +294,6 @@ body {
   transform: translateY(-2px);
 }
 
-/* 件数バッジ */
 .tag-count {
   font-size: 10px;
   background: #2a2a2a;
@@ -407,73 +404,65 @@ body {
 
 <script>
 // ========================================================
-// ⚙️ 【データ設定エリア】おにーちゃんのJSONデータをここに丸ごと貼り付けてね！
+// 🧠 【ガチ全自動化コア】外部 data.json を100%自動で読み込むシステム
 // ========================================================
-const jsonData = [
-  {
-    "img": "images/sample1.jpg",
-    "title": "黒髪ロングのメイドさん",
-    "tags": ["メイド", "黒髪ロング", "絶対領域", "高画質"],
-    "desc": "くい込みショーツが大変セクシーな至高のメイドです。"
-  },
-  {
-    "img": "images/sample2.jpg",
-    "title": "白レースのセクシーショーツ",
-    "tags": ["ビキニ", "下着", "お姉さん", "レース"],
-    "desc": "透明感のある白レースにこだわったグラビア風ポーズ画像。"
-  },
-  {
-    "img": "images/sample3.jpg",
-    "title": "ツインテールJK風スイムウェア",
-    "tags": ["ツインテール", "JK風", "ビキニ", "高画質"],
-    "desc": "真夏のプールサイドをイメージした、甘口セクシーアセット。"
-  },
-  {
-    "img": "images/sample4.jpg",
-    "title": "エプロンのみの破壊力",
-    "tags": ["メイド", "エプロン", "裸エプロン", "黒髪ロング"],
-    "desc": "限界突破のシチュエーション。LoRAの学習ソースに最適。"
-  }
-];
-
-// ========================================================
-// 🧠 完全連動コア・JavaScriptシステム
-// ========================================================
-
+let jsonData = []; // 最初は空っぽにしておくよ！
 let wheelCount = 0; 
 let isPushedUp = false; 
 let currentActiveTag = null;
 
 window.addEventListener('DOMContentLoaded', () => {
-  // 1. JSONデータを元に、imagesフォルダ内の画像を実数レンダリング！
-  renderMasonry(jsonData);
-  // 2. JSON内のタグを完全集計して、すべての画面のタグボタンを自動生成！
-  initDynamicTags();
-  // 3. 3スクロールアニメーションを起動
-  setupScrollAnimation();
+  // 📁 同じフォルダに置いてある「data.json」を直接自動で吸い上げる神アップデート！
+  fetch('data.json')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('data.jsonが見つからないか、読み込めないよぅ＞＜');
+      }
+      return response.json();
+    })
+    .then(data => {
+      jsonData = data; // 読み込んだ本物データをグローバルに格納！
+      
+      // データが準備できたら、各種レンダリングを美しく連動起動！
+      renderMasonry(jsonData);
+      initDynamicTags();
+      setupScrollAnimation();
+    })
+    .catch(error => {
+      console.error(error);
+      // 万が一jsonの読み込みが死んだ時のための、バックアップ用お供えデータ
+      jsonData = [
+        { "img": "images/sample1.jpg", "title": "データ読み込みエラー＞＜", "tags": ["エラー"], "desc": "data.jsonがHTMLと同じフォルダに正しく配置されているか確認してね！" }
+      ];
+      renderMasonry(jsonData);
+      initDynamicTags();
+      setupScrollAnimation();
+    });
 });
 
-// 1. ギャラリー画像生成（JSONに書かれた実画像を完全に参照）
+// 1. ギャラリー画像生成
 function renderMasonry(data) {
   const grid = document.getElementById('masonry-grid');
   grid.innerHTML = '';
+  
+  if(!data || data.length === 0) {
+    grid.innerHTML = '<div style="padding:20px; color:#888;">画像が1枚も登録されてないよぅ...</div>';
+    return;
+  }
   
   data.forEach(item => {
     const div = document.createElement('div');
     div.className = 'item';
     div.addEventListener('click', () => openDetail(item));
-    
-    // ✨ ここでおにーちゃんの指定した「images/ファイル名」を完全に参照してるよ！
     div.innerHTML = `<img src="${item.img}" alt="${item.title}">`;
     grid.appendChild(div);
   });
 }
 
-// 2. JSONデータからタグと登録件数を100%全自動で集計・展開するシステム
+// 2. タグ集計システム
 function initDynamicTags() {
   const tagCounts = {};
   
-  // JSONの中身をすべて舐めて、登録タグとその件数をガチ集計
   jsonData.forEach(item => {
     if (item.tags && Array.isArray(item.tags)) {
       item.tags.forEach(t => { 
@@ -482,10 +471,8 @@ function initDynamicTags() {
     }
   });
 
-  // 件数が多い順にソートして、上位10件の「Hotタグ」を抽出
   const sortedTags = Object.keys(tagCounts).sort((a,b) => tagCounts[b] - tagCounts[a]).slice(0, 10);
 
-  // 各画面のコンテナをリセットして配置
   const welcomeBox = document.getElementById('welcome-hot-tags');
   const stickyBox = document.getElementById('sticky-hot-tags');
   const masterBox = document.getElementById('master-tag-list-container');
@@ -494,19 +481,16 @@ function initDynamicTags() {
   stickyBox.innerHTML = '';
   masterBox.innerHTML = '';
 
-  // ギャラリー中央＆ヘッダーに厳選10個を配置
   sortedTags.forEach(tag => {
     welcomeBox.appendChild(createTagButton(tag, tagCounts[tag]));
     stickyBox.appendChild(createTagButton(tag, tagCounts[tag]));
   });
 
-  // 「タグ一覧」タブ側には、JSONに含まれる全タグを漏れなくずらっと配置！
   Object.keys(tagCounts).sort().forEach(tag => {
     masterBox.appendChild(createTagButton(tag, tagCounts[tag]));
   });
 }
 
-// タグボタンのHTML要素を綺麗に作る共通関数
 function createTagButton(tag, count) {
   const div = document.createElement('div');
   div.className = 'tag-btn';
@@ -515,9 +499,8 @@ function createTagButton(tag, count) {
   return div;
 }
 
-// 3. タグ選択時のギャラリーフィルタリング（100%同期）
+// 3. フィルタリング同期
 function toggleTagFilter(tag) {
-  // 画面上の全タグボタンのビジュアル（ネオン）を同期制御
   document.querySelectorAll('.tag-btn').forEach(btn => {
     if(btn.childNodes[0].textContent.trim() === tag) {
       btn.classList.toggle('selected');
@@ -528,27 +511,35 @@ function toggleTagFilter(tag) {
 
   if (currentActiveTag === tag) {
     currentActiveTag = null;
-    renderMasonry(jsonData); // 全表示に戻す
+    renderMasonry(jsonData);
   } else {
     currentActiveTag = tag;
-    // JSONを検索して、そのタグ持ち画像だけを抽出！
     const filtered = jsonData.filter(item => item.tags && item.tags.includes(tag));
     renderMasonry(filtered);
   }
 
-  // タグが押されたら、強制的に「ギャラリーせり上がり状態」にしてお披露目！
   showTab('gallery');
+  executePushUp(); // タグが押されたら強制的にガッ！とせり上げ！
+}
+
+// せり上がりアニメーションの共通化
+function executePushUp() {
   document.getElementById('welcome-layer').classList.add('scrolled-up');
   document.getElementById('gallery-layer').classList.add('pushed-up');
   isPushedUp = true;
   wheelCount = 3;
 }
 
-// 3スクロール連動アニメーションシステム
+function executePullDown() {
+  document.getElementById('welcome-layer').classList.remove('scrolled-up');
+  document.getElementById('gallery-layer').classList.remove('pushed-up');
+  isPushedUp = false;
+  wheelCount = 0;
+}
+
+// スクロール連動アニメーションシステム
 function setupScrollAnimation() {
   const mainWindow = document.getElementById('main-content-window');
-  const welcomeLayer = document.getElementById('welcome-layer');
-  const galleryLayer = document.getElementById('gallery-layer');
   const galleryScroll = document.getElementById('gallery-scroll-area');
 
   mainWindow.addEventListener('wheel', (e) => {
@@ -568,23 +559,8 @@ function setupScrollAnimation() {
   });
 
   document.querySelector('.scroll-hint').addEventListener('click', executePushUp);
-
-  function executePushUp() {
-    welcomeLayer.classList.add('scrolled-up');
-    galleryLayer.classList.add('pushed-up');
-    isPushedUp = true;
-    wheelCount = 3;
-  }
-
-  function executePullDown() {
-    welcomeLayer.classList.remove('scrolled-up');
-    galleryLayer.classList.remove('pushed-up');
-    isPushedUp = false;
-    wheelCount = 0;
-  }
 }
 
-// タグ一覧画面内のリアルタイム文字検索
 function searchTagsOnScreen() {
   const query = document.getElementById('tag-search-input').value.toLowerCase();
   document.querySelectorAll('#master-tag-list-container .tag-btn').forEach(btn => {
@@ -593,7 +569,6 @@ function searchTagsOnScreen() {
   });
 }
 
-// 右側詳細スライドサイドバーを開く
 function openDetail(item) {
   const sidebar = document.getElementById('detail-sidebar');
   document.getElementById('detail-img').src = item.img;
@@ -612,7 +587,6 @@ function openDetail(item) {
     });
   }
 
-  // 類似画像（同じタグ持ちを最大9個抽出）
   const similarGrid = document.getElementById('similar-grid');
   similarGrid.innerHTML = '';
   const similars = jsonData.filter(all => all.img !== item.img && all.tags.some(t => item.tags.includes(t)));
