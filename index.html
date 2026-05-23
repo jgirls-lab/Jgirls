@@ -15,7 +15,7 @@ body {
 }
 
 /* ==========================================
-   左サイドバー（メニュー）
+   左サイドバー
    ========================================== */
 .sidebar {
   width: 220px;
@@ -138,7 +138,7 @@ body {
   left: 0;
   background: #0a0a0a;
   z-index: 20;
-  transition: top 0.8s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s ease; /* 横幅の変化にアニメーションをかける */
+  transition: top 0.8s cubic-bezier(0.25, 1, 0.5, 1);
   display: flex;
   flex-direction: column;
 }
@@ -177,17 +177,11 @@ body {
   padding: 15px;
 }
 
-/* Masonryグリッド */
+/* Masonryグリッド（★重さの原因を完全排除！列数は5列で絶対固定！） */
 .grid {
   column-count: 5;
   column-gap: 12px;
-  transition: all 0.4s ease;
 }
-/* 詳細が開いている時は、左側のグリッドを3列にして縮小させる（見やすさ重視！） */
-.main.detail-open .grid {
-  column-count: 3 !important;
-}
-
 @media (max-width: 1400px) { .grid { column-count: 4; } }
 @media (max-width: 1000px) { .grid { column-count: 3; } }
 
@@ -313,7 +307,7 @@ body {
 }
 
 /* ==========================================
-   ✨ 【新開発】左側ダイナミック拡大表示レイヤー
+   ✨ 【超軽量・ヌルサク化】左側ダイナミック拡大表示レイヤー
    ========================================== */
 .big-preview-overlay {
   position: absolute;
@@ -321,15 +315,16 @@ body {
   left: 0;
   width: calc(100% - 380px); /* 右側サイドバー(380px)のスペースを空ける */
   height: calc(100% - 60px);
-  background: rgba(5, 5, 5, 0.95); /* 高級感のある超濃厚ブラックシースルー */
+  background: rgba(5, 5, 5, 0.96); /* 高級感のある濃厚シースルー */
   z-index: 15;
   display: flex;
   justify-content: center;
   align-items: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.4s ease;
-  padding: 30px;
+  /* ★激重処理を排除して、GPU加速（transform）だけを使って超高速にフェードインさせるよぅ！ */
+  transition: opacity 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  padding: 40px;
   box-sizing: border-box;
 }
 .big-preview-overlay.open {
@@ -341,12 +336,13 @@ body {
   max-height: 100%;
   object-fit: contain;
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 42, 109, 0.2);
-  animation: zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 42, 109, 0.15);
+  transform: scale(0.97);
+  transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform; /* GPUに「今から動かすよ！」って教えて超加速させる魔法の1行ッ！ */
 }
-@keyframes zoomIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+.big-preview-overlay.open .big-preview-img {
+  transform: scale(1);
 }
 
 /* ==========================================
@@ -361,9 +357,10 @@ body {
   right: -400px;
   top: 0;
   z-index: 2000;
-  transition: right 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: right 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   display: flex;
   flex-direction: column;
+  will-change: right;
 }
 .detail-sidebar.open { right: 0; }
 
@@ -594,16 +591,15 @@ function searchTagsOnScreen() {
   });
 }
 
-// 🔍 【連動大改造】画像クリックで「左側大画面拡大」＆「右側サイドバー」を同時に開く！
+// 🔍 【軽量爆速化】画像クリック処理
 function openDetail(item) {
   const sidebar = document.getElementById('detail-sidebar');
-  const mainWindow = document.getElementById('main-content-window');
   const bigPreviewArea = document.getElementById('big-preview-area');
   const bigPreviewSrc = document.getElementById('big-preview-src');
   
   // 1. 左側の大画面プレビューに、クリックした本物画像をブチ込む！
   bigPreviewSrc.src = item.img;
-  bigPreviewArea.classList.add('open'); // フェードイン表示！
+  bigPreviewArea.classList.add('open'); // 超軽量フェードイン！
 
   // 2. 右側サイドバーの関連画像を生成
   const similarGrid = document.getElementById('similar-grid');
@@ -622,19 +618,16 @@ function openDetail(item) {
     similarGrid.appendChild(div);
   });
 
-  // 3. 全体を「詳細表示モード」にする
-  mainWindow.classList.add('detail-open');
+  // 3. 右側サイドバーをスライドイン（裏のグリッド列は変更しないので超軽量！）
   sidebar.classList.add('open');
 }
 
 // ❌ 閉じる時の連動
 function closeDetail() { 
   const sidebar = document.getElementById('detail-sidebar');
-  const mainWindow = document.getElementById('main-content-window');
   const bigPreviewArea = document.getElementById('big-preview-area');
   
   if (sidebar) sidebar.classList.remove('open');
-  if (mainWindow) mainWindow.classList.remove('detail-open');
   if (bigPreviewArea) bigPreviewArea.classList.remove('open'); // 左側大画面を消す！
 }
 
